@@ -1,0 +1,29 @@
+# Environment and credentials
+.env
+*.env
+*.secret
+
+# Virtual environment & Python cache
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Raw dataset zip extraction
+data/git_web_ml/
+data/raw/
+*.zip
+*.tar.gz
+
+# Local database data dirs
+data_kuzu/
+kuzu_db/
+neo4j_data/
+memgraph_data/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
