@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # 1. Neo4j Community (Capped to 0.5 vCPU and 512MB RAM for fairness)
+  neo4j:
+    image: neo4j:5.15.0-community
+    container_name: benchmark-neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    environment:
+      - NEO4J_AUTH=neo4j/benchmark_secret_password
+      - NEO4J_server_memory_heap_initial__size=256m
+      - NEO4J_server_memory_heap_max__size=384m
+      - NEO4J_server_memory_pagecache_size=128m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+  # 2. Memgraph (In-memory C++ engine capped to 0.5 vCPU and 256MB RAM)
+  memgraph:
+    image: memgraph/memgraph:latest
+    container_name: benchmark-memgraph
+    ports:
+      - "7688:7687"
+    command: ["--storage-properties-on-disk=false", "--storage-gc-cycle-sec=10"]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+
+  # 3. FalkorDB (GraphBLAS sparse matrix engine capped to 0.5 vCPU and 256MB RAM)
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: benchmark-falkordb
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
