@@ -1,0 +1,15 @@
+{
+  "dataset_name": "SNAP GitHub Network (Sampled Benchmark Standard)",
+  "nodes_count": 37700,
+  "edges_count": 394213,
+  "avg_degree": 20.91,
+  "node_attributes": [
+    "node_id",
+    "name",
+    "stars",
+    "repos",
+    "language",
+    "created_year"
+  ],
+  "relationship_type": "FOLLOWS"
+}
