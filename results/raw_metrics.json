@@ -1,672 +1,350 @@
 {
+  "__meta": {
+    "generated_at": "2026-08-19T08:11:00.789645+00:00",
+    "mode": "full",
+    "warmup_iters": 20,
+    "measured_iters": 100,
+    "concurrency_levels": [
+      1,
+      10,
+      40
+    ],
+    "dataset_nodes": 37700,
+    "dataset_edges": 394213,
+    "dataset_source": "SNAP GitHub Social Network (musae-github) \u2014 deterministic generation",
+    "random_seed": 42
+  },
   "CognoDB Cloud": {
     "platform": "CognoDB Cloud",
+    "status": "ok",
     "footprint": {
-      "vCPU": "0.5 (burstable)",
-      "RAM_allocated": "256 MB",
-      "Disk_allocated": "1 GB",
-      "memory_usage": "Cloud Managed",
-      "stored_data_size": "Observable in CognoDB Cloud Console"
+      "deployment": "Managed Cloud \u2014 CognoDB Cloud c0 free tier",
+      "region": "us-east4 (N. Virginia)",
+      "vCPU": "Burst to 0.5 vCPU",
+      "RAM_allocated_MB": 512,
+      "storage_GiB": 1,
+      "max_connections": 200,
+      "memory_usage": "Not directly observable (managed cloud)",
+      "stored_data_size": "Observable in CognoDB Cloud Console",
+      "note": "Assignment PDF documents 256 MB RAM; actual CognoDB console shows 512 MB. We report the observed/actual value."
     },
     "ingest": {
       "platform": "CognoDB Cloud",
       "total_nodes": 37700,
-      "total_edges": 100000,
-      "wall_clock_time_s": 54.38,
-      "nodes_per_sec": 693.31,
-      "rels_per_sec": 1839.02
+      "total_edges": 394213,
+      "wall_clock_time_s": 101.15,
+      "nodes_per_sec": 372.73,
+      "rels_per_sec": 3897.49
     },
     "traversals": {
       "1_hop": {
         "name": "1-hop Traversal",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 256.93,
-        "p90_ms": 257.4,
-        "p95_ms": 257.53,
-        "p99_ms": 257.64,
-        "mean_ms": 256.98,
-        "min_ms": 256.41,
-        "max_ms": 257.67,
-        "std_dev_ms": 0.4,
-        "total_duration_s": 1.285,
-        "throughput_qps": 3.89
+        "p50_ms": 270.368,
+        "p90_ms": 346.698,
+        "p95_ms": 428.192,
+        "p99_ms": 614.353,
+        "mean_ms": 336.489,
+        "min_ms": 268.691,
+        "max_ms": 4166.204,
+        "std_dev_ms": 388.958,
+        "total_duration_s": 33.649,
+        "throughput_qps": 2.97
       },
       "2_hop": {
         "name": "2-hop Traversal",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 256.83,
-        "p90_ms": 257.62,
-        "p95_ms": 257.84,
-        "p99_ms": 258.02,
-        "mean_ms": 257.04,
-        "min_ms": 256.59,
-        "max_ms": 258.07,
-        "std_dev_ms": 0.52,
-        "total_duration_s": 1.285,
-        "throughput_qps": 3.89
+        "p50_ms": 273.168,
+        "p90_ms": 345.785,
+        "p95_ms": 423.297,
+        "p99_ms": 1129.292,
+        "mean_ms": 327.632,
+        "min_ms": 269.007,
+        "max_ms": 2560.057,
+        "std_dev_ms": 245.332,
+        "total_duration_s": 32.764,
+        "throughput_qps": 3.05
       },
       "3_hop": {
         "name": "3-hop Traversal",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 257.09,
-        "p90_ms": 257.51,
-        "p95_ms": 257.64,
-        "p99_ms": 257.75,
-        "mean_ms": 257.03,
-        "min_ms": 256.51,
-        "max_ms": 257.77,
-        "std_dev_ms": 0.44,
-        "total_duration_s": 1.285,
-        "throughput_qps": 3.89
+        "p50_ms": 301.455,
+        "p90_ms": 385.59,
+        "p95_ms": 608.362,
+        "p99_ms": 2064.005,
+        "mean_ms": 371.875,
+        "min_ms": 273.056,
+        "max_ms": 2210.387,
+        "std_dev_ms": 297.54,
+        "total_duration_s": 37.188,
+        "throughput_qps": 2.69
       }
     },
     "lookups": {
       "point_lookup": {
         "name": "Point Lookup (by Primary ID)",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 256.35,
-        "p90_ms": 256.4,
-        "p95_ms": 256.4,
-        "p99_ms": 256.41,
-        "mean_ms": 256.27,
-        "min_ms": 255.87,
-        "max_ms": 256.41,
-        "std_dev_ms": 0.2,
-        "total_duration_s": 1.281,
-        "throughput_qps": 3.9
+        "p50_ms": 269.321,
+        "p90_ms": 346.083,
+        "p95_ms": 372.5,
+        "p99_ms": 574.56,
+        "mean_ms": 296.808,
+        "min_ms": 268.284,
+        "max_ms": 577.5,
+        "std_dev_ms": 63.408,
+        "total_duration_s": 29.681,
+        "throughput_qps": 3.37
       },
       "indexed_lookup": {
         "name": "Indexed Filtered Lookup (stars >= threshold)",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 607.61,
-        "p90_ms": 615.92,
-        "p95_ms": 616.6,
-        "p99_ms": 617.14,
-        "mean_ms": 589.84,
-        "min_ms": 512.47,
-        "max_ms": 617.28,
-        "std_dev_ms": 39.24,
-        "total_duration_s": 2.949,
-        "throughput_qps": 1.7
+        "p50_ms": 511.561,
+        "p90_ms": 668.878,
+        "p95_ms": 773.134,
+        "p99_ms": 1033.548,
+        "mean_ms": 460.909,
+        "min_ms": 269.588,
+        "max_ms": 1844.016,
+        "std_dev_ms": 217.988,
+        "total_duration_s": 46.091,
+        "throughput_qps": 2.17
       }
     },
     "aggregations": {
       "aggregation_group_by": {
         "name": "Group-by Aggregation (Language & Relations)",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 1170.87,
-        "p90_ms": 1192.95,
-        "p95_ms": 1198.82,
-        "p99_ms": 1203.51,
-        "mean_ms": 1135.77,
-        "min_ms": 1047.42,
-        "max_ms": 1204.69,
-        "std_dev_ms": 60.67,
-        "total_duration_s": 5.679,
-        "throughput_qps": 0.88
+        "p50_ms": 2445.889,
+        "p90_ms": 2674.894,
+        "p95_ms": 2811.673,
+        "p99_ms": 4002.245,
+        "mean_ms": 2489.124,
+        "min_ms": 2096.847,
+        "max_ms": 4263.608,
+        "std_dev_ms": 292.058,
+        "total_duration_s": 248.913,
+        "throughput_qps": 0.4
       }
     },
     "concurrency": {
       "concurrency_1": {
         "clients": 1,
-        "total_ops": 12,
+        "total_ops": 14,
         "errors": 0,
-        "duration_s": 3.34,
-        "throughput_qps": 3.6,
-        "p50_ms": 262.91,
-        "p95_ms": 329.61
+        "duration_s": 10.51,
+        "throughput_qps": 1.33,
+        "p50_ms": 710.26,
+        "p95_ms": 1333.11
       },
-      "concurrency_5": {
-        "clients": 5,
-        "total_ops": 32,
+      "concurrency_10": {
+        "clients": 10,
+        "total_ops": 106,
         "errors": 0,
-        "duration_s": 3.2,
-        "throughput_qps": 9.99,
-        "p50_ms": 256.29,
-        "p95_ms": 1760.81
+        "duration_s": 10.45,
+        "throughput_qps": 10.14,
+        "p50_ms": 524.98,
+        "p95_ms": 3653.67
+      },
+      "concurrency_40": {
+        "clients": 40,
+        "total_ops": 709,
+        "errors": 0,
+        "duration_s": 10.97,
+        "throughput_qps": 64.62,
+        "p50_ms": 539.51,
+        "p95_ms": 1078.31
       }
     }
   },
   "Neo4j": {
     "platform": "Neo4j",
+    "status": "ok",
     "footprint": {
-      "vCPU": "0.5 (capped)",
-      "RAM_allocated": "512 MB",
-      "Disk_allocated": "1 GB",
-      "memory_usage": "JVM Heap capped at 384m",
-      "stored_data_size": "Observable via sysinfo"
+      "deployment": "Cloud \u2014 Neo4j AuraDB Free tier",
+      "vCPU": "Shared (free tier; exact allocation not published by Neo4j)",
+      "RAM_allocated_MB": "Not observable (managed cloud; free tier ~ 1 GB heap stated in docs)",
+      "storage": "Not directly observable (managed cloud)",
+      "region": "Configurable at signup (match CognoDB region for fairness)",
+      "memory_usage": "Not observable",
+      "stored_data_size": "Observable in AuraDB console"
     },
     "ingest": {
       "platform": "Neo4j",
       "total_nodes": 37700,
       "total_edges": 394213,
-      "wall_clock_time_s": 58.74,
-      "nodes_per_sec": 641.81,
-      "rels_per_sec": 6711.15
+      "wall_clock_time_s": 94.37,
+      "nodes_per_sec": 399.51,
+      "rels_per_sec": 4177.51
     },
     "traversals": {
       "1_hop": {
         "name": "1-hop Traversal",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 3.73,
-        "p90_ms": 5.81,
-        "p95_ms": 6.13,
-        "p99_ms": 6.39,
-        "mean_ms": 4.46,
-        "min_ms": 3.59,
-        "max_ms": 6.46,
-        "std_dev_ms": 1.09,
-        "total_duration_s": 0.022,
-        "throughput_qps": 224.01
+        "p50_ms": 77.382,
+        "p90_ms": 179.508,
+        "p95_ms": 219.029,
+        "p99_ms": 664.365,
+        "mean_ms": 120.525,
+        "min_ms": 75.974,
+        "max_ms": 1834.933,
+        "std_dev_ms": 185.626,
+        "total_duration_s": 12.053,
+        "throughput_qps": 8.3
       },
       "2_hop": {
         "name": "2-hop Traversal",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 15.12,
-        "p90_ms": 16.34,
-        "p95_ms": 16.51,
-        "p99_ms": 16.65,
-        "mean_ms": 14.08,
-        "min_ms": 10.25,
-        "max_ms": 16.68,
-        "std_dev_ms": 2.37,
-        "total_duration_s": 0.07,
-        "throughput_qps": 71.0
+        "p50_ms": 77.464,
+        "p90_ms": 80.223,
+        "p95_ms": 85.909,
+        "p99_ms": 431.08,
+        "mean_ms": 90.589,
+        "min_ms": 76.381,
+        "max_ms": 605.028,
+        "std_dev_ms": 71.399,
+        "total_duration_s": 9.059,
+        "throughput_qps": 11.04
       },
       "3_hop": {
         "name": "3-hop Traversal",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 53.12,
-        "p90_ms": 58.35,
-        "p95_ms": 59.14,
-        "p99_ms": 59.77,
-        "mean_ms": 50.81,
-        "min_ms": 38.5,
-        "max_ms": 59.93,
-        "std_dev_ms": 7.55,
-        "total_duration_s": 0.254,
-        "throughput_qps": 19.68
+        "p50_ms": 78.117,
+        "p90_ms": 82.329,
+        "p95_ms": 148.656,
+        "p99_ms": 433.449,
+        "mean_ms": 95.301,
+        "min_ms": 76.79,
+        "max_ms": 907.442,
+        "std_dev_ms": 90.992,
+        "total_duration_s": 9.53,
+        "throughput_qps": 10.49
       }
     },
     "lookups": {
       "point_lookup": {
         "name": "Point Lookup (by Primary ID)",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 4.23,
-        "p90_ms": 4.42,
-        "p95_ms": 4.43,
-        "p99_ms": 4.44,
-        "mean_ms": 3.89,
-        "min_ms": 3.16,
-        "max_ms": 4.45,
-        "std_dev_ms": 0.57,
-        "total_duration_s": 0.019,
-        "throughput_qps": 256.92
+        "p50_ms": 77.581,
+        "p90_ms": 177.906,
+        "p95_ms": 216.712,
+        "p99_ms": 771.475,
+        "mean_ms": 209.589,
+        "min_ms": 76.023,
+        "max_ms": 10155.179,
+        "std_dev_ms": 1003.206,
+        "total_duration_s": 20.959,
+        "throughput_qps": 4.77
       },
       "indexed_lookup": {
         "name": "Indexed Filtered Lookup (stars >= threshold)",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 8.17,
-        "p90_ms": 10.85,
-        "p95_ms": 11.51,
-        "p99_ms": 12.03,
-        "mean_ms": 8.44,
-        "min_ms": 6.34,
-        "max_ms": 12.17,
-        "std_dev_ms": 2.08,
-        "total_duration_s": 0.042,
-        "throughput_qps": 118.31
+        "p50_ms": 100.686,
+        "p90_ms": 265.751,
+        "p95_ms": 374.418,
+        "p99_ms": 1385.053,
+        "mean_ms": 190.077,
+        "min_ms": 76.289,
+        "max_ms": 2327.616,
+        "std_dev_ms": 291.956,
+        "total_duration_s": 19.008,
+        "throughput_qps": 5.26
       }
     },
     "aggregations": {
       "aggregation_group_by": {
         "name": "Group-by Aggregation (Language & Relations)",
-        "count": 5,
+        "count": 100,
         "errors": 0,
-        "p50_ms": 14.45,
-        "p90_ms": 17.76,
-        "p95_ms": 18.13,
-        "p99_ms": 18.43,
-        "mean_ms": 15.06,
-        "min_ms": 12.13,
-        "max_ms": 18.51,
-        "std_dev_ms": 2.26,
-        "total_duration_s": 0.075,
-        "throughput_qps": 66.4
+        "p50_ms": 160.46,
+        "p90_ms": 230.352,
+        "p95_ms": 291.715,
+        "p99_ms": 448.07,
+        "mean_ms": 183.536,
+        "min_ms": 150.946,
+        "max_ms": 705.858,
+        "std_dev_ms": 75.539,
+        "total_duration_s": 18.354,
+        "throughput_qps": 5.45
       }
     },
     "concurrency": {
       "concurrency_1": {
         "clients": 1,
-        "total_ops": 549,
+        "total_ops": 66,
         "errors": 0,
-        "duration_s": 3.0,
-        "throughput_qps": 182.76,
-        "p50_ms": 5.39,
-        "p95_ms": 7.92
+        "duration_s": 10.03,
+        "throughput_qps": 6.58,
+        "p50_ms": 151.19,
+        "p95_ms": 171.17
       },
-      "concurrency_5": {
-        "clients": 5,
-        "total_ops": 2796,
+      "concurrency_10": {
+        "clients": 10,
+        "total_ops": 305,
         "errors": 0,
-        "duration_s": 3.0,
-        "throughput_qps": 930.95,
-        "p50_ms": 5.24,
-        "p95_ms": 8.06
+        "duration_s": 10.18,
+        "throughput_qps": 29.96,
+        "p50_ms": 250.04,
+        "p95_ms": 735.38
+      },
+      "concurrency_40": {
+        "clients": 40,
+        "total_ops": 1362,
+        "errors": 0,
+        "duration_s": 10.69,
+        "throughput_qps": 127.4,
+        "p50_ms": 162.1,
+        "p95_ms": 1026.71
       }
     }
   },
   "Memgraph": {
     "platform": "Memgraph",
+    "status": "unavailable",
+    "reason": "Connection failed or credentials not configured",
     "footprint": {
-      "vCPU": "0.5 (capped)",
-      "RAM_allocated": "256 MB",
-      "Disk_allocated": "In-Memory RAM Engine",
-      "memory_usage": "Observable via Memgraph SHOW STORAGE INFO",
-      "stored_data_size": "In-memory representation"
-    },
-    "ingest": {
-      "platform": "Memgraph",
-      "total_nodes": 37700,
-      "total_edges": 394213,
-      "wall_clock_time_s": 14.62,
-      "nodes_per_sec": 2578.66,
-      "rels_per_sec": 26963.95
-    },
-    "traversals": {
-      "1_hop": {
-        "name": "1-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 1.27,
-        "p90_ms": 1.53,
-        "p95_ms": 1.54,
-        "p99_ms": 1.56,
-        "mean_ms": 1.32,
-        "min_ms": 1.11,
-        "max_ms": 1.56,
-        "std_dev_ms": 0.17,
-        "total_duration_s": 0.007,
-        "throughput_qps": 758.23
-      },
-      "2_hop": {
-        "name": "2-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 3.55,
-        "p90_ms": 4.19,
-        "p95_ms": 4.21,
-        "p99_ms": 4.22,
-        "mean_ms": 3.62,
-        "min_ms": 3.01,
-        "max_ms": 4.22,
-        "std_dev_ms": 0.49,
-        "total_duration_s": 0.018,
-        "throughput_qps": 276.48
-      },
-      "3_hop": {
-        "name": "3-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 13.27,
-        "p90_ms": 17.54,
-        "p95_ms": 18.23,
-        "p99_ms": 18.78,
-        "mean_ms": 14.52,
-        "min_ms": 11.95,
-        "max_ms": 18.92,
-        "std_dev_ms": 2.48,
-        "total_duration_s": 0.073,
-        "throughput_qps": 68.86
-      }
-    },
-    "lookups": {
-      "point_lookup": {
-        "name": "Point Lookup (by Primary ID)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 1.38,
-        "p90_ms": 1.61,
-        "p95_ms": 1.67,
-        "p99_ms": 1.72,
-        "mean_ms": 1.34,
-        "min_ms": 1.04,
-        "max_ms": 1.74,
-        "std_dev_ms": 0.24,
-        "total_duration_s": 0.007,
-        "throughput_qps": 744.74
-      },
-      "indexed_lookup": {
-        "name": "Indexed Filtered Lookup (stars >= threshold)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 4.06,
-        "p90_ms": 4.7,
-        "p95_ms": 4.91,
-        "p99_ms": 5.07,
-        "mean_ms": 4.0,
-        "min_ms": 3.2,
-        "max_ms": 5.11,
-        "std_dev_ms": 0.65,
-        "total_duration_s": 0.02,
-        "throughput_qps": 250.14
-      }
-    },
-    "aggregations": {
-      "aggregation_group_by": {
-        "name": "Group-by Aggregation (Language & Relations)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 4.55,
-        "p90_ms": 6.11,
-        "p95_ms": 6.18,
-        "p99_ms": 6.24,
-        "mean_ms": 4.84,
-        "min_ms": 3.62,
-        "max_ms": 6.25,
-        "std_dev_ms": 1.06,
-        "total_duration_s": 0.024,
-        "throughput_qps": 206.76
-      }
-    },
-    "concurrency": {
-      "concurrency_1": {
-        "clients": 1,
-        "total_ops": 1778,
-        "errors": 0,
-        "duration_s": 3.0,
-        "throughput_qps": 592.37,
-        "p50_ms": 1.68,
-        "p95_ms": 2.26
-      },
-      "concurrency_5": {
-        "clients": 5,
-        "total_ops": 9108,
-        "errors": 0,
-        "duration_s": 3.0,
-        "throughput_qps": 3034.11,
-        "p50_ms": 1.65,
-        "p95_ms": 2.23
-      }
+      "deployment": "Cloud \u2014 Memgraph Cloud free tier (or local Docker)",
+      "vCPU": "Shared (free tier; exact allocation not published)",
+      "RAM_allocated_MB": "Not observable (managed cloud; free tier 256 MB per docs)",
+      "storage": "In-memory (persistence optional)",
+      "region": "Configure to match CognoDB region for fairness",
+      "memory_usage": "Not directly observable (managed cloud)",
+      "stored_data_size": "Observable via SHOW STORAGE INFO"
     }
   },
   "FalkorDB": {
     "platform": "FalkorDB",
+    "status": "unavailable",
+    "reason": "Connection failed or credentials not configured",
     "footprint": {
-      "vCPU": "0.5 (capped)",
-      "RAM_allocated": "256 MB",
-      "Disk_allocated": "In-Memory Redis GraphBLAS",
-      "memory_usage": "Observable via Redis INFO memory",
-      "stored_data_size": "Sparse CSR/CSC Matrix representation"
-    },
-    "ingest": {
-      "platform": "FalkorDB",
-      "total_nodes": 37700,
-      "total_edges": 394213,
-      "wall_clock_time_s": 19.35,
-      "nodes_per_sec": 1948.32,
-      "rels_per_sec": 20372.76
-    },
-    "traversals": {
-      "1_hop": {
-        "name": "1-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 1.81,
-        "p90_ms": 2.4,
-        "p95_ms": 2.46,
-        "p99_ms": 2.51,
-        "mean_ms": 1.89,
-        "min_ms": 1.26,
-        "max_ms": 2.53,
-        "std_dev_ms": 0.44,
-        "total_duration_s": 0.009,
-        "throughput_qps": 527.52
-      },
-      "2_hop": {
-        "name": "2-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 6.97,
-        "p90_ms": 7.8,
-        "p95_ms": 8.01,
-        "p99_ms": 8.17,
-        "mean_ms": 6.47,
-        "min_ms": 4.24,
-        "max_ms": 8.21,
-        "std_dev_ms": 1.36,
-        "total_duration_s": 0.032,
-        "throughput_qps": 154.43
-      },
-      "3_hop": {
-        "name": "3-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 26.33,
-        "p90_ms": 29.43,
-        "p95_ms": 29.81,
-        "p99_ms": 30.12,
-        "mean_ms": 25.88,
-        "min_ms": 20.11,
-        "max_ms": 30.2,
-        "std_dev_ms": 3.46,
-        "total_duration_s": 0.129,
-        "throughput_qps": 38.64
-      }
-    },
-    "lookups": {
-      "point_lookup": {
-        "name": "Point Lookup (by Primary ID)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 1.34,
-        "p90_ms": 1.97,
-        "p95_ms": 2.0,
-        "p99_ms": 2.02,
-        "mean_ms": 1.5,
-        "min_ms": 0.98,
-        "max_ms": 2.02,
-        "std_dev_ms": 0.39,
-        "total_duration_s": 0.008,
-        "throughput_qps": 664.73
-      },
-      "indexed_lookup": {
-        "name": "Indexed Filtered Lookup (stars >= threshold)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 5.6,
-        "p90_ms": 7.27,
-        "p95_ms": 7.78,
-        "p99_ms": 8.19,
-        "mean_ms": 5.88,
-        "min_ms": 4.58,
-        "max_ms": 8.3,
-        "std_dev_ms": 1.27,
-        "total_duration_s": 0.029,
-        "throughput_qps": 170.06
-      }
-    },
-    "aggregations": {
-      "aggregation_group_by": {
-        "name": "Group-by Aggregation (Language & Relations)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 6.62,
-        "p90_ms": 8.32,
-        "p95_ms": 8.51,
-        "p99_ms": 8.65,
-        "mean_ms": 6.96,
-        "min_ms": 5.15,
-        "max_ms": 8.69,
-        "std_dev_ms": 1.2,
-        "total_duration_s": 0.035,
-        "throughput_qps": 143.65
-      }
-    },
-    "concurrency": {
-      "concurrency_1": {
-        "clients": 1,
-        "total_ops": 1569,
-        "errors": 0,
-        "duration_s": 3.0,
-        "throughput_qps": 522.8,
-        "p50_ms": 1.88,
-        "p95_ms": 2.62
-      },
-      "concurrency_5": {
-        "clients": 5,
-        "total_ops": 7910,
-        "errors": 0,
-        "duration_s": 3.0,
-        "throughput_qps": 2634.66,
-        "p50_ms": 1.89,
-        "p95_ms": 2.59
-      }
+      "deployment": "Self-hosted via Docker (falkordb/falkordb image)",
+      "vCPU": "Host machine CPU (not independently capped for this benchmark)",
+      "RAM_allocated_MB": "Not directly enforced; Docker default (no --memory flag applied)",
+      "storage": "In-memory (Redis-based)",
+      "region": "Local (same machine as benchmark client)",
+      "memory_usage": "Observable via Redis INFO memory on the Docker container",
+      "stored_data_size": "Observable via Redis INFO memory",
+      "note": "Docker resource limits not enforced. Resource fairness caveat documented."
     }
   },
   "K\u00f9zu": {
     "platform": "K\u00f9zu",
+    "status": "unavailable",
+    "reason": "Connection failed or credentials not configured",
     "footprint": {
-      "vCPU": "0.5 (1 worker thread)",
-      "RAM_allocated": "256 MB (Buffer Pool)",
-      "Disk_allocated": "Columnar Disk/Memory layout",
-      "memory_usage": "Bounded by 256 MB buffer pool limit",
-      "stored_data_size": "Vectorized CSR files"
-    },
-    "ingest": {
-      "platform": "K\u00f9zu",
-      "total_nodes": 37700,
-      "total_edges": 394213,
-      "wall_clock_time_s": 0.47,
-      "nodes_per_sec": 80896.79,
-      "rels_per_sec": 845903.6
-    },
-    "traversals": {
-      "1_hop": {
-        "name": "1-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 0.0,
-        "p90_ms": 0.0,
-        "p95_ms": 0.0,
-        "p99_ms": 0.0,
-        "mean_ms": 0.0,
-        "min_ms": 0.0,
-        "max_ms": 0.0,
-        "std_dev_ms": 0.0,
-        "total_duration_s": 0.0,
-        "throughput_qps": 1935759.91
-      },
-      "2_hop": {
-        "name": "2-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 0.02,
-        "p90_ms": 0.02,
-        "p95_ms": 0.02,
-        "p99_ms": 0.03,
-        "mean_ms": 0.02,
-        "min_ms": 0.01,
-        "max_ms": 0.03,
-        "std_dev_ms": 0.01,
-        "total_duration_s": 0.0,
-        "throughput_qps": 61068.69
-      },
-      "3_hop": {
-        "name": "3-hop Traversal",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 0.1,
-        "p90_ms": 0.13,
-        "p95_ms": 0.14,
-        "p99_ms": 0.15,
-        "mean_ms": 0.1,
-        "min_ms": 0.07,
-        "max_ms": 0.15,
-        "std_dev_ms": 0.03,
-        "total_duration_s": 0.0,
-        "throughput_qps": 10341.26
-      }
-    },
-    "lookups": {
-      "point_lookup": {
-        "name": "Point Lookup (by Primary ID)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 0.0,
-        "p90_ms": 0.0,
-        "p95_ms": 0.0,
-        "p99_ms": 0.0,
-        "mean_ms": 0.0,
-        "min_ms": 0.0,
-        "max_ms": 0.0,
-        "std_dev_ms": 0.0,
-        "total_duration_s": 0.0,
-        "throughput_qps": 1090993.15
-      },
-      "indexed_lookup": {
-        "name": "Indexed Filtered Lookup (stars >= threshold)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 0.39,
-        "p90_ms": 1.13,
-        "p95_ms": 1.34,
-        "p99_ms": 1.51,
-        "mean_ms": 0.64,
-        "min_ms": 0.37,
-        "max_ms": 1.55,
-        "std_dev_ms": 0.46,
-        "total_duration_s": 0.003,
-        "throughput_qps": 1563.84
-      }
-    },
-    "aggregations": {
-      "aggregation_group_by": {
-        "name": "Group-by Aggregation (Language & Relations)",
-        "count": 5,
-        "errors": 0,
-        "p50_ms": 3.62,
-        "p90_ms": 5.13,
-        "p95_ms": 5.62,
-        "p99_ms": 6.02,
-        "mean_ms": 4.09,
-        "min_ms": 3.47,
-        "max_ms": 6.12,
-        "std_dev_ms": 1.01,
-        "total_duration_s": 0.02,
-        "throughput_qps": 244.38
-      }
-    },
-    "concurrency": {
-      "concurrency_1": {
-        "clients": 1,
-        "total_ops": 9463527,
-        "errors": 0,
-        "duration_s": 3.04,
-        "throughput_qps": 3114158.8,
-        "p50_ms": 0.0,
-        "p95_ms": 0.0
-      },
-      "concurrency_5": {
-        "clients": 5,
-        "total_ops": 9500617,
-        "errors": 0,
-        "duration_s": 3.07,
-        "throughput_qps": 3093082.76,
-        "p50_ms": 0.0,
-        "p95_ms": 0.0
-      }
+      "deployment": "Embedded (would run in-process on benchmark client machine)",
+      "status": "Unavailable \u2014 kuzu has no prebuilt wheel for Python 3.14 arm64",
+      "workaround": "Re-run with Python 3.10/3.11/3.12 to enable K\u00f9zu benchmark"
     }
   }
 }
