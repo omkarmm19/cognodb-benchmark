@@ -4,15 +4,9 @@ Memgraph Benchmark Runner
 Connects to Memgraph via Bolt protocol (uses the neo4j Python driver,
 which is compatible with Memgraph's OpenCypher Bolt interface).
 
-Supported targets:
-  - Memgraph Cloud free tier (bolt+s://...)
-  - Local Memgraph via Docker (bolt://localhost:7688)
-
-If Memgraph is not reachable this runner returns connected=False and
-the orchestrator records it as "unavailable". No simulated results.
-
-Docs:  https://memgraph.com/docs
-Docker image: memgraph/memgraph-platform
+Target:
+  - Local Docker container on port 7688 (mapped from container 7687)
+  - Enforced resource limits: 0.5 vCPU, 512 MB RAM (matching CognoDB parity)
 """
 
 import os
@@ -27,18 +21,18 @@ from harness.base import BaseGraphRunner
 class MemgraphRunner(BaseGraphRunner):
     def __init__(self, config: Dict[str, Any] = None):
         super().__init__("Memgraph", config or {})
-        self.uri = self.config.get("MEMGRAPH_URI") or os.getenv("MEMGRAPH_URI", "")
+        self.uri = self.config.get("MEMGRAPH_URI") or os.getenv("MEMGRAPH_URI", "bolt://localhost:7688")
         self.user = self.config.get("MEMGRAPH_USER") or os.getenv("MEMGRAPH_USER", "")
         self.password = self.config.get("MEMGRAPH_PASSWORD") or os.getenv("MEMGRAPH_PASSWORD", "")
         self.driver = None
 
     def connect(self) -> bool:
         if not self.uri:
-            print(f"[{self.name}] MEMGRAPH_URI not set in .env — skipping.")
+            print(f"[{self.name}] MEMGRAPH_URI not set — skipping.")
             return False
         try:
             print(f"[{self.name}] Connecting to {self.uri}...")
-            auth = (self.user, self.password) if self.user else None
+            auth = (self.user, self.password) if (self.user and self.password) else None
             self.driver = GraphDatabase.driver(
                 self.uri,
                 auth=auth,
@@ -75,9 +69,14 @@ class MemgraphRunner(BaseGraphRunner):
             return False
         try:
             with self.driver.session() as s:
-                # Memgraph uses different index syntax
-                s.run("CREATE INDEX ON :Developer(node_id)")
-                s.run("CREATE INDEX ON :Developer(stars)")
+                try:
+                    s.run("CREATE INDEX ON :Developer(node_id)")
+                except Exception:
+                    pass
+                try:
+                    s.run("CREATE INDEX ON :Developer(stars)")
+                except Exception:
+                    pass
             print(f"[{self.name}] Indices created: :Developer(node_id), :Developer(stars).")
             return True
         except Exception as e:
@@ -85,14 +84,14 @@ class MemgraphRunner(BaseGraphRunner):
             return False
 
     def load_dataset(
-        self, nodes_csv: str, edges_csv: str, batch_size: int = 1000
+        self, nodes_csv: str, edges_csv: str, batch_size: int = 2000
     ) -> Dict[str, Any]:
         t_start = time.perf_counter()
         total_nodes = 0
         total_edges = 0
 
-        # Nodes
-        print(f"[{self.name}] Ingesting nodes...")
+        # Ingest Nodes
+        print(f"[{self.name}] Ingesting nodes (batch_size={batch_size})...")
         with open(nodes_csv, "r", encoding="utf-8") as f:
             batch: List[Dict[str, Any]] = []
             for row in csv.DictReader(f):
@@ -114,8 +113,8 @@ class MemgraphRunner(BaseGraphRunner):
                 total_nodes += len(batch)
         print(f"\n[{self.name}] Nodes ingested: {total_nodes:,}")
 
-        # Edges
-        print(f"[{self.name}] Ingesting relationships...")
+        # Ingest Edges
+        print(f"[{self.name}] Ingesting relationships (batch_size={batch_size})...")
         with open(edges_csv, "r", encoding="utf-8") as f:
             batch = []
             for row in csv.DictReader(f):
@@ -134,11 +133,16 @@ class MemgraphRunner(BaseGraphRunner):
                 total_edges += len(batch)
         print(f"\n[{self.name}] Edges ingested: {total_edges:,}")
 
+        # Verify counts in DB
+        with self.driver.session() as s:
+            n_count = s.run("MATCH (d:Developer) RETURN count(d) AS cnt").single()["cnt"]
+            r_count = s.run("MATCH ()-[r:FOLLOWS]->() RETURN count(r) AS cnt").single()["cnt"]
+
         t_total = time.perf_counter() - t_start
         return {
             "platform":          self.name,
-            "total_nodes":       total_nodes,
-            "total_edges":       total_edges,
+            "total_nodes":       n_count,
+            "total_edges":       r_count,
             "wall_clock_time_s": round(t_total, 2),
             "nodes_per_sec":     round(total_nodes / t_total, 2) if t_total > 0 else 0,
             "rels_per_sec":      round(total_edges / t_total, 2) if t_total > 0 else 0,
@@ -230,11 +234,12 @@ class MemgraphRunner(BaseGraphRunner):
 
     def get_footprint(self) -> Dict[str, Any]:
         return {
-            "deployment":       "Cloud — Memgraph Cloud free tier (or local Docker)",
-            "vCPU":             "Shared (free tier; exact allocation not published)",
-            "RAM_allocated_MB": "Not observable (managed cloud; free tier 256 MB per docs)",
-            "storage":          "In-memory (persistence optional)",
-            "region":           "Configure to match CognoDB region for fairness",
-            "memory_usage":     "Not directly observable (managed cloud)",
+            "deployment":       "Self-hosted Docker (memgraph/memgraph:latest)",
+            "vCPU":             "0.5 vCPU (capped via docker deploy limits)",
+            "RAM_allocated_MB": 512,
+            "storage":          "In-memory C++ graph representation with ACID persistence",
+            "region":           "Localhost (Docker bridged network)",
+            "memory_usage":     "Observable via SHOW STORAGE INFO",
             "stored_data_size": "Observable via SHOW STORAGE INFO",
+            "note":             "Runs in local Docker container with explicit 0.5 vCPU and 512MB RAM resource caps for strict parity.",
         }

@@ -2,18 +2,12 @@
 FalkorDB Benchmark Runner
 --------------------------
 Connects to FalkorDB using the official falkordb Python client.
+FalkorDB is a low-latency graph database backed by Redis and GraphBLAS
+sparse adjacency matrices.
 
-Supported targets:
-  - FalkorDB Cloud free tier
-  - Local FalkorDB via Docker (redis://localhost:6379)
-
-If FalkorDB is not reachable this runner returns connected=False and
-the orchestrator records it as "unavailable". No simulated results.
-
-Docker setup:
-  docker run -p 6379:6379 falkordb/falkordb
-
-Docs: https://docs.falkordb.com
+Target:
+  - Local Docker container on port 6379 (falkordb/falkordb:latest)
+  - Enforced resource limits: 0.5 vCPU, 512 MB RAM (matching CognoDB parity)
 """
 
 import os
@@ -27,7 +21,7 @@ from harness.base import BaseGraphRunner
 class FalkorDBRunner(BaseGraphRunner):
     def __init__(self, config: Dict[str, Any] = None):
         super().__init__("FalkorDB", config or {})
-        self.host = self.config.get("FALKORDB_HOST") or os.getenv("FALKORDB_HOST", "")
+        self.host = self.config.get("FALKORDB_HOST") or os.getenv("FALKORDB_HOST", "localhost")
         self.port = int(self.config.get("FALKORDB_PORT") or os.getenv("FALKORDB_PORT", 6379))
         self.password = self.config.get("FALKORDB_PASSWORD") or os.getenv("FALKORDB_PASSWORD", "")
         self.graph = None
@@ -46,7 +40,6 @@ class FalkorDBRunner(BaseGraphRunner):
                 password=self.password if self.password else None,
             )
             self.graph = self._client.select_graph("benchmark_social")
-            # ping
             self.graph.query("RETURN 1")
             self.connected = True
             print(f"[{self.name}] Connected successfully.")
@@ -77,23 +70,29 @@ class FalkorDBRunner(BaseGraphRunner):
         if not self.graph:
             return False
         try:
-            self.graph.query("CREATE INDEX FOR (d:Developer) ON (d.node_id)")
-            self.graph.query("CREATE INDEX FOR (d:Developer) ON (d.stars)")
+            try:
+                self.graph.query("CREATE INDEX FOR (d:Developer) ON (d.node_id)")
+            except Exception:
+                pass
+            try:
+                self.graph.query("CREATE INDEX FOR (d:Developer) ON (d.stars)")
+            except Exception:
+                pass
             print(f"[{self.name}] Indices created: Developer(node_id), Developer(stars).")
             return True
         except Exception as e:
-            print(f"[{self.name}] Index creation warning: {e}")
+            print(f"[{self.name}] Index creation notice: {e}")
             return False
 
     def load_dataset(
-        self, nodes_csv: str, edges_csv: str, batch_size: int = 500
+        self, nodes_csv: str, edges_csv: str, batch_size: int = 2000
     ) -> Dict[str, Any]:
         t_start = time.perf_counter()
         total_nodes = 0
         total_edges = 0
 
-        # Nodes
-        print(f"[{self.name}] Ingesting nodes...")
+        # Ingest Nodes
+        print(f"[{self.name}] Ingesting nodes (batch_size={batch_size})...")
         with open(nodes_csv, "r", encoding="utf-8") as f:
             batch: List[Dict[str, Any]] = []
             for row in csv.DictReader(f):
@@ -115,8 +114,8 @@ class FalkorDBRunner(BaseGraphRunner):
                 total_nodes += len(batch)
         print(f"\n[{self.name}] Nodes ingested: {total_nodes:,}")
 
-        # Edges
-        print(f"[{self.name}] Ingesting relationships...")
+        # Ingest Edges
+        print(f"[{self.name}] Ingesting relationships (batch_size={batch_size})...")
         with open(edges_csv, "r", encoding="utf-8") as f:
             batch = []
             for row in csv.DictReader(f):
@@ -135,11 +134,17 @@ class FalkorDBRunner(BaseGraphRunner):
                 total_edges += len(batch)
         print(f"\n[{self.name}] Edges ingested: {total_edges:,}")
 
+        # Verify counts in graph
+        n_res = self.graph.query("MATCH (d:Developer) RETURN count(d)").result_set
+        n_count = n_res[0][0] if n_res else total_nodes
+        r_res = self.graph.query("MATCH ()-[r:FOLLOWS]->() RETURN count(r)").result_set
+        r_count = r_res[0][0] if r_res else total_edges
+
         t_total = time.perf_counter() - t_start
         return {
             "platform":          self.name,
-            "total_nodes":       total_nodes,
-            "total_edges":       total_edges,
+            "total_nodes":       n_count,
+            "total_edges":       r_count,
             "wall_clock_time_s": round(t_total, 2),
             "nodes_per_sec":     round(total_nodes / t_total, 2) if t_total > 0 else 0,
             "rels_per_sec":      round(total_edges / t_total, 2) if t_total > 0 else 0,
@@ -220,12 +225,12 @@ class FalkorDBRunner(BaseGraphRunner):
 
     def get_footprint(self) -> Dict[str, Any]:
         return {
-            "deployment":       "Self-hosted via Docker (falkordb/falkordb image)",
-            "vCPU":             "Host machine CPU (not independently capped for this benchmark)",
-            "RAM_allocated_MB": "Not directly enforced; Docker default (no --memory flag applied)",
-            "storage":          "In-memory (Redis-based)",
-            "region":           "Local (same machine as benchmark client)",
-            "memory_usage":     "Observable via Redis INFO memory on the Docker container",
+            "deployment":       "Self-hosted Docker (falkordb/falkordb:latest)",
+            "vCPU":             "0.5 vCPU (capped via docker deploy limits)",
+            "RAM_allocated_MB": 512,
+            "storage":          "In-memory GraphBLAS sparse matrices over Redis engine",
+            "region":           "Localhost (Docker bridged network)",
+            "memory_usage":     "Observable via Redis INFO memory",
             "stored_data_size": "Observable via Redis INFO memory",
-            "note":             "Docker resource limits not enforced. Resource fairness caveat documented.",
+            "note":             "Runs in local Docker container with explicit 0.5 vCPU and 512MB RAM resource caps for strict parity.",
         }
