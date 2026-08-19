@@ -85,7 +85,7 @@ All benchmark routines adhere strictly to Section 5.2 of the Wexa specification:
    ```cypher
    MATCH (d:Developer {node_id: $id}) RETURN d.name, d.stars, d.language LIMIT 1
    ```
-5. **Indexed Filtered Lookup**: Range scan utilizing index on property `stars`:
+5. **Indexed Filtered Lookup**: Range scan on property `stars` (index-backed on CognoDB, Neo4j, Memgraph, and FalkorDB; **predicate-filtered columnar scan on Kùzu** — no secondary index on `stars` in Kùzu v0.11):
    ```cypher
    MATCH (d:Developer) WHERE d.stars >= $stars RETURN d.node_id, d.stars, d.language LIMIT 50
    ```
@@ -111,6 +111,17 @@ CREATE INDEX ON :Developer(stars);
 CREATE INDEX FOR (d:Developer) ON (d.node_id);
 CREATE INDEX FOR (d:Developer) ON (d.stars);
 ```
+
+> **Index coverage per platform**
+> | Platform | `node_id` index | `stars` index |
+> | :--- | :---: | :---: |
+> | CognoDB Cloud | ✅ Secondary index (`dev_id_idx`) | ✅ Secondary index (`dev_stars_idx`) |
+> | Neo4j AuraDB | ✅ Secondary index (`dev_id_idx`) | ✅ Secondary index (`dev_stars_idx`) |
+> | Memgraph | ✅ Label-property index | ✅ Label-property index |
+> | FalkorDB | ✅ Secondary index | ✅ Secondary index |
+> | Kùzu | ✅ `node_id` is schema `PRIMARY KEY` (auto-indexed) | ❌ No secondary index on `stars` — the **Indexed Filter Lookup is a filtered full scan** on Kùzu, not an index-range scan |
+>
+> The Kùzu `stars` filtered lookup (`WHERE d.stars >= $stars`) runs as a **predicate-filtered columnar scan** rather than an index seek. This is consistent with Kùzu's OLAP design (it does not support user-defined secondary indexes in v0.11). Latency results for this workload on Kùzu therefore reflect scan throughput, not index-lookup cost.
 
 ---
 

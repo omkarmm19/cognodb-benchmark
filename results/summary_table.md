@@ -47,8 +47,8 @@
 | Platform      | Deployment                                     | RAM (MB)                                                             | Memory Usage                            |
 |---------------|------------------------------------------------|----------------------------------------------------------------------|-----------------------------------------|
 | CognoDB Cloud | Managed Cloud — CognoDB Cloud c0 free tier     | 512                                                                  | Not directly observable (managed cloud) |
-| Neo4j         | Cloud — Neo4j AuraDB Free tier                 | Not observable (managed cloud; free tier ~ 1 GB heap stated in docs) | Not observable                          |
+| Neo4j         | Cloud — Neo4j AuraDB Free tier                 | Not observable / Undisclosed (no RAM spec published for AuraDB Free tier) | Not observable                          |
 | Memgraph      | Self-hosted Docker (memgraph/memgraph:latest)  | 512                                                                  | Observable via SHOW STORAGE INFO        |
 | FalkorDB      | Self-hosted Docker (falkordb/falkordb:latest)  | 512                                                                  | Observable via Redis INFO memory        |
-| Kùzu          | Embedded In-Process (Vectorized Columnar OLAP) | 512                                                                  | Bounded by 512 MB buffer pool           |
+| Kùzu          | Embedded In-Process (Vectorized Columnar OLAP) | 512                                                                  | 512 MB buffer pool parameter; total process RSS not hard-capped           |
 
