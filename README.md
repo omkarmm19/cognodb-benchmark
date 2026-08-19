@@ -1,147 +1,225 @@
-# ⚡ Graph Database Cloud Benchmarking Suite
+# CognoDB Cloud Benchmark: Graph Database Comparison
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Benchmark: SNAP GitHub](https://img.shields.io/badge/dataset-SNAP%20GitHub%20(394k%20edges)-orange.svg)](https://snap.stanford.edu)
-[![Parity: 0.5 vCPU / 256MB](https://img.shields.io/badge/hardware%20parity-0.5%20vCPU%20%7C%20256MB%20RAM-success.svg)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-An open, reproducible, and rigorous cloud benchmarking suite comparing **[CognoDB Cloud](https://cognodb.com)** against contemporary graph database platforms (**Neo4j**, **Memgraph**, **FalkorDB**, and **Kùzu**) on identical datasets, identical queries, and strictly matched resource allocations.
+> **Wexa.ai Backend Engineer Assessment — Graph Database Benchmark**
+>
+> Benchmarks CognoDB Cloud (free tier c0) against industry-standard graph databases on a real-world social network graph (Stanford SNAP GitHub Social Network), measuring data ingestion throughput, graph traversal latencies (p50/p95), index-based lookups, group-by aggregations, and mixed-workload concurrency scaling.
 
 ---
 
-## 🎯 Executive Summary
+## ⚠️ Honest Scope & Caveats
 
-Graph databases exhibit widely divergent performance characteristics depending on their internal storage layouts (native graph vs. CSR/CSC sparse matrices vs. B+Tree index lookups), execution engines (interpreted Cypher vs. JIT/vectorized pipelines), and concurrency control models.
+> The purpose of this benchmark is to demonstrate engineering rigor, fairness, reproducibility, and honest technical communication — not to make any database "win."
 
-This benchmark evaluates **CognoDB Cloud c0** (burstable 0.5 vCPU, 256 MB RAM, 1 GB disk) against peers under strictly matched hardware budgets using the **SNAP GitHub Social Graph** (37,700 developer nodes, 394,213 relationships).
-
----
-
-## 📊 Benchmark Results Matrix
-
-### 1. Data Ingestion Performance
-Measures batch insertion throughput and total wall-clock loading time across 37,700 nodes and 394,213 relationships.
-
-| Platform | Resource Limits | Nodes Loaded | Edges Loaded | Total Wall-Clock Time | Nodes/sec | Rels/sec |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **CognoDB Cloud** | 0.5 vCPU / 256 MB RAM | 37,700 | 394,213 | 42.18s | 893.7 | 9,345.9 |
-| **Kùzu Graph** | 0.5 vCPU / 256 MB RAM | 37,700 | 394,213 | 0.84s | 44,880.9 | 469,301.2 |
-| **Memgraph** | 0.5 vCPU / 256 MB RAM | 37,700 | 394,213 | 14.62s | 2,578.6 | 26,963.9 |
-| **FalkorDB** | 0.5 vCPU / 256 MB RAM | 37,700 | 394,213 | 19.35s | 1,948.3 | 20,372.7 |
-| **Neo4j** | 0.5 vCPU / 512 MB RAM | 37,700 | 394,213 | 58.74s | 641.8 | 6,711.1 |
-
-![Ingest Throughput](results/charts/ingest_throughput.png)
+| Caveat | Detail |
+|--------|--------|
+| **CognoDB RAM spec** | Assignment PDF documents 256 MB; actual CognoDB Cloud console (c0 free tier) shows **512 MB**. We report the actual observed value. |
+| **Platforms benchmarked** | **CognoDB Cloud** (live cloud) + **Neo4j AuraDB Free** (live cloud). Memgraph, FalkorDB, Kùzu were unavailable (see below). |
+| **Memgraph** | No running instance configured. Results reported as "unavailable" — no simulated numbers produced. |
+| **FalkorDB** | `falkordb` Python package not installed; no running instance. Results reported as "unavailable". |
+| **Kùzu** | No prebuilt wheel for Python 3.14 arm64; source build fails. Results reported as "unavailable". Reproducible on Python ≤3.12. |
+| **Network vs embedded** | CognoDB and Neo4j are accessed over the internet (bolt+s); results include network round-trip time. Kùzu (if available) would run embedded with zero network cost — direct comparison would require a clear note about this unfair advantage. |
+| **Resource parity** | Both cloud DBs are on managed free tiers; exact CPU allocation is not user-controllable. We document what is observable. |
 
 ---
 
-### 2. Graph Traversal Latency (1-Hop, 2-Hop, 3-Hop)
-Latency measured across 100+ randomized source nodes after warm-up. Reported in **milliseconds (p50 / p95)**.
+## 1. Dataset
 
-| Platform | 1-Hop Traversal (p50 / p95 ms) | 2-Hop Traversal (p50 / p95 ms) | 3-Hop Traversal (p50 / p95 ms) |
-| :--- | :--- | :--- | :--- |
-| **CognoDB Cloud** | **1.82 ms** / **3.45 ms** | **4.90 ms** / **9.15 ms** | **18.40 ms** / **34.20 ms** |
-| **Kùzu Graph** | **0.08 ms** / **0.19 ms** | **0.42 ms** / **1.10 ms** | **2.85 ms** / **6.40 ms** |
-| **Memgraph** | **0.95 ms** / **1.80 ms** | **2.60 ms** / **5.30 ms** | **11.20 ms** / **22.50 ms** |
-| **FalkorDB** | **1.10 ms** / **2.15 ms** | **3.10 ms** / **6.80 ms** | **14.50 ms** / **29.10 ms** |
-| **Neo4j** | **2.95 ms** / **5.80 ms** | **8.40 ms** / **16.90 ms** | **32.10 ms** / **61.40 ms** |
+| Property | Value |
+|----------|-------|
+| **Source** | Stanford SNAP — GitHub Social Network (`musae-github`) |
+| **Nodes** | 37,700 (GitHub developers) |
+| **Edges** | 394,213 (follow relationships) |
+| **Node properties** | `node_id`, `name`, `stars`, `repos`, `language`, `created_year` |
+| **Edge properties** | `weight` (interaction strength) |
+| **Generation** | Deterministic synthetic attributes on the real SNAP topology |
+| **Dataset is identical across all benchmarked platforms** | ✅ |
 
-![Traversal Latencies](results/charts/traversal_latencies.png)
-
----
-
-### 3. Point Lookups & Aggregations
-- **Point Lookup**: Primary key lookup `(d:Developer {node_id: $id})`
-- **Indexed Filter**: `WHERE d.stars >= $stars LIMIT 50`
-- **Group-By Aggregation**: Aggregation of relationships by language
-
-| Platform | Point Lookup (p50 / p95 ms) | Indexed Filter (p50 / p95 ms) | Group-by Aggregation (p50 / p95 ms) |
-| :--- | :--- | :--- | :--- |
-| **CognoDB Cloud** | 1.15 ms / 2.30 ms | 2.10 ms / 4.20 ms | 4.80 ms / 9.20 ms |
-| **Kùzu Graph** | 0.04 ms / 0.09 ms | 0.12 ms / 0.28 ms | 0.65 ms / 1.40 ms |
-| **Memgraph** | 0.72 ms / 1.40 ms | 1.35 ms / 2.60 ms | 3.10 ms / 6.20 ms |
-| **FalkorDB** | 0.85 ms / 1.60 ms | 1.60 ms / 3.10 ms | 3.90 ms / 7.50 ms |
-| **Neo4j** | 1.80 ms / 3.90 ms | 3.20 ms / 6.80 ms | 7.90 ms / 15.40 ms |
+**Dataset CSV stats verified:**
+```
+nodes.csv:  37,700 data rows + 1 header = 37,701 lines
+edges.csv: 394,213 data rows + 1 header = 394,214 lines
+```
 
 ---
 
-### 4. Mixed Concurrency Workload (80% Read / 20% Write)
-Sustained queries per second (QPS) under varying concurrent client thread counts (1, 10, and 40 clients).
+## 2. Methodology
 
-| Platform | 1 Client Throughput | 10 Clients Throughput | 40 Clients Throughput | Scaling Efficiency |
-| :--- | :--- | :--- | :--- | :--- |
-| **CognoDB Cloud** | 480 QPS (p95: 3.8ms) | 2,940 QPS (p95: 7.2ms) | 4,850 QPS (p95: 18.4ms) | **10.1x** |
-| **Kùzu Graph** | 11,200 QPS (p95: 0.2ms)| 38,500 QPS (p95: 0.8ms)| 54,200 QPS (p95: 1.9ms) | **4.8x** |
-| **Memgraph** | 1,020 QPS (p95: 1.9ms) | 6,800 QPS (p95: 3.9ms) | 9,400 QPS (p95: 9.8ms)  | **9.2x** |
-| **FalkorDB** | 890 QPS (p95: 2.3ms)  | 5,400 QPS (p95: 4.8ms) | 7,100 QPS (p95: 12.2ms) | **7.9x** |
-| **Neo4j** | 310 QPS (p95: 6.2ms)  | 1,650 QPS (p95: 14.5ms)| 2,400 QPS (p95: 38.0ms) | **7.7x** |
+### 2.1 Benchmark Workloads (per Wexa.ai spec §5.2)
 
-![Concurrency Scaling](results/charts/concurrency_scaling.png)
+| # | Workload | Query Pattern |
+|---|---------|---------------|
+| 1 | **1-hop traversal** | `MATCH (d {node_id:$id})-[:FOLLOWS]->(n) RETURN count(n)` |
+| 2 | **2-hop traversal** | `MATCH (d {node_id:$id})-[:FOLLOWS*2]->(n) RETURN count(DISTINCT n)` |
+| 3 | **3-hop traversal** | `MATCH (d {node_id:$id})-[:FOLLOWS*3]->(n) RETURN count(DISTINCT n)` |
+| 4 | **Point lookup** | `MATCH (d {node_id:$id}) RETURN d.name, d.stars, d.language LIMIT 1` |
+| 5 | **Indexed filter** | `MATCH (d) WHERE d.stars >= $threshold RETURN d.node_id, d.stars LIMIT 50` |
+| 6 | **Group-by aggregation** | `MATCH (d)-[r:FOLLOWS]->() RETURN d.language, count(r), avg(d.stars)` |
+| 7 | **Mixed concurrency** | 80% reads (point_lookup + 1-hop) / 20% writes (`SET d.stars`), N=1/10/40 clients |
+
+### 2.2 Statistical Rigor
+
+| Parameter | Value |
+|-----------|-------|
+| Warmup iterations | 20 (excluded from all measurements) |
+| Measured iterations | 100 |
+| Percentiles reported | p50, p90, p95, p99 |
+| Timer precision | `time.perf_counter()` (sub-microsecond, monotonic) |
+| Node sample set | 200 random nodes, `random.seed(42)` (reproducible) |
+| Concurrency duration | 10 seconds per level |
+
+### 2.3 Indices Created (before warm-up)
+
+```cypher
+-- CognoDB Cloud & Neo4j AuraDB
+CREATE INDEX dev_id_idx IF NOT EXISTS FOR (d:Developer) ON (d.node_id)
+CREATE INDEX dev_stars_idx IF NOT EXISTS FOR (d:Developer) ON (d.stars)
+```
 
 ---
 
-## 🔍 Deep-Dive Architectural Analysis: Why the Platforms Differ
+## 3. Infrastructure & Resource Footprint
 
-### 1. Storage Layout & Pointer Chasing vs. Vectorized CSR
-- **Traditional Pointer Chasing (Neo4j)**: Neo4j uses fixed-size record stores with double-linked lists for relationships. Traversal requires jumping memory addresses per hop, which incurs high CPU L1/L2 cache misses under constrained RAM (512MB limit).
-- **Columnar Compressed Sparse Row (Kùzu)**: Kùzu organizes adjacency lists into contiguous CSR columnar chunks with Factorized Execution. Traversals are vectorized SIMD memory scans rather than discrete pointer hops.
-- **Sparse Matrix Linear Algebra (FalkorDB)**: FalkorDB implements GraphBLAS operations via Redis, treating graph traversals as sparse matrix-vector multiplications ($A \times x$). It excels on uniform degree distributions but incurs overhead on transactional mixed point writes.
-- **CognoDB Cloud Optimization**: CognoDB Cloud achieves impressive p50 latency (~1.8ms 1-hop, ~4.9ms 2-hop) with a very lean memory footprint (256MB tier), beating Neo4j's latency by **over 40%** while executing in a fully managed cloud container.
+### CognoDB Cloud (c0 Free Tier)
+| Property | Value |
+|----------|-------|
+| Plan | Free (c0) |
+| RAM | **512 MB** _(actual console value; PDF documents 256 MB)_ |
+| vCPU | Burst to 0.5 vCPU |
+| Storage | 1 GiB |
+| Region | `us-east4` (N. Virginia, GCP) |
+| Max connections | 200 |
+| Protocol | `bolt+s` (TLS Bolt) |
+| Query language | Cypher |
 
-### 2. JVM Heap Overhead vs Native C++ / Rust Engines
-- Under 256MB–512MB RAM constraints, JVM-based engines (Neo4j) suffer from garbage collection pauses and page cache contention. Native engines (Memgraph in C++, Kùzu in C++, CognoDB in Rust/C++) maintain deterministic flat latency profiles.
+### Neo4j AuraDB Free
+| Property | Value |
+|----------|-------|
+| Plan | AuraDB Free |
+| RAM | ~1 GB (free tier, as documented by Neo4j) |
+| vCPU | Shared (exact allocation not published) |
+| Protocol | `neo4j+s` (TLS Bolt) |
+| Query language | Cypher |
+| Node | `6f285d40.databases.neo4j.io` |
+
+> **Note on fairness:** Neo4j AuraDB free tier has a larger documented RAM allocation (1 GB) than CognoDB (512 MB). This means latency comparisons may favor Neo4j in memory-constrained scenarios. This is documented transparently.
 
 ---
 
-## 🛠️ Step-by-Step Reproduction Guide
+## 4. Results
 
-### Prerequisites
-- Python 3.10+
-- (Optional) Docker for local peer containers
+_Results below are generated from real benchmark runs. No simulated, fake, or hardcoded values are used. Platforms that could not be reached are listed as "unavailable"._
 
-### 1. Clone & Setup
+<!-- RESULTS_TABLE_PLACEHOLDER -->
+
+See [`results/raw_metrics.json`](results/raw_metrics.json) for full per-query percentile data.
+
+### Charts
+
+| Ingest Throughput | Traversal Latencies | Concurrency Scaling |
+|:-----------------:|:-------------------:|:-------------------:|
+| ![Ingest](results/charts/ingest_throughput.png) | ![Traversal](results/charts/traversal_latencies.png) | ![Concurrency](results/charts/concurrency_scaling.png) |
+
+---
+
+## 5. Analysis & Observations
+
+### Data Ingestion
+- **CognoDB Cloud** ingests via batch Cypher `UNWIND $batch CREATE` over an encrypted bolt+s connection. Throughput is network-latency-bound (round-trips per batch).
+- **Neo4j AuraDB** uses the same batch approach over `neo4j+s`. As AuraDB is US-region hosted similarly, ingest rates are comparable.
+
+### Graph Traversal
+- **1-hop** traversals are index-backed (lookup by `node_id`) and should be fast on both.
+- **2-hop / 3-hop** traversals grow exponentially with branching factor. Both databases run server-side Cypher expansion.
+- Higher p95 vs p50 gap indicates occasional hot-nodes (high-degree developers) causing longer traversal paths.
+
+### Mixed Concurrency
+- Both databases use connection pooling (`max_connection_pool_size=50`).
+- Throughput at N=40 clients may be throttled by the free-tier connection limits.
+
+### What Cannot Be Observed
+- Exact CPU utilization on managed cloud instances (not exposed)
+- Memory pressure / GC events (not accessible on free tier)
+- Disk I/O breakdown
+
+---
+
+## 6. Reproducibility
+
 ```bash
-git clone https://github.com/<your-username>/cognodb-benchmark.git
+# 1. Clone the repository
+git clone https://github.com/omkarmm19/cognodb-benchmark.git
 cd cognodb-benchmark
+
+# 2. Create virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
 
-### 2. Configure Credentials
-Copy `.env.example` to `.env` and insert your CognoDB Cloud credentials:
-```bash
+# 3. Configure credentials
 cp .env.example .env
-```
-Edit `.env`:
-```env
-COGNODB_URI=bolt+s://<your-instance>.databases.cognodb.cloud
-COGNODB_USER=cognodb
-COGNODB_PASSWORD=your_password_here
-```
+# Edit .env — add CognoDB URI/password, Neo4j URI/password
 
-### 3. Run Benchmark (Single Command)
-```bash
-# Run quick verification pass (5 iterations)
-python run_benchmark.py --quick
+# 4. Download dataset
+python data/download_dataset.py
 
-# Run full evaluation (100+ iterations + Concurrency Sweeps)
+# 5. Run connectivity check
+python run_benchmark.py --check
+
+# 6. Run full benchmark
 python run_benchmark.py --full
-```
 
-### 4. Generate Reports & Charts
-```bash
+# 7. Generate charts & tables
 python generate_report.py
 ```
 
----
-
-## 🛡️ Fairness & Honest Methodology Caveats
-
-1. **Network Overhead**: CognoDB Cloud was tested over TLS encrypted Bolt (`bolt+s://`). A ~1-2ms round-trip network transit is included in cloud calls versus in-process local engines.
-2. **Memory Ceiling**: All databases were tested under strict $\le 512\text{ MB}$ memory caps to prevent tier inflation.
-3. **Identical Query Semantics**: All engines executed identical declarative Cypher queries without vendor-specific shortcuts.
+**Note on Kùzu:** Requires Python ≤3.12. Install with `pip install kuzu`, then re-run the benchmark. Kùzu runs as an embedded engine with zero network overhead.
 
 ---
 
-## 📄 License
-MIT License. Built for the Wexa.ai Backend Engineering Assessment.
+## 7. Repository Structure
+
+```
+cognodb-benchmark/
+├── data/
+│   ├── download_dataset.py     # SNAP dataset downloader & CSV generator
+│   ├── nodes.csv               # 37,700 developer nodes
+│   └── edges.csv               # 394,213 follow relationships
+├── harness/
+│   ├── base.py                 # Abstract BaseGraphRunner interface
+│   ├── metrics.py              # LatencyTracker — p50/p95/p99 statistics
+│   ├── workloads.py            # Workload runners (traversal, lookup, concurrency)
+│   └── runners/
+│       ├── cognodb_runner.py   # CognoDB Cloud (bolt+s)
+│       ├── neo4j_runner.py     # Neo4j AuraDB / local (bolt)
+│       ├── memgraph_runner.py  # Memgraph Cloud / Docker (bolt)
+│       ├── falkordb_runner.py  # FalkorDB Docker (Redis/Bolt)
+│       └── kuzu_runner.py      # Kùzu embedded (requires Python ≤3.12)
+├── results/
+│   ├── raw_metrics.json        # Full per-query percentile results
+│   ├── summary_table.md        # Auto-generated markdown table
+│   └── charts/                 # PNG charts (ingestion, traversal, concurrency)
+├── docker-compose.yml          # Local peer containers (Neo4j, Memgraph, FalkorDB)
+├── generate_report.py          # Chart & table generator
+├── run_benchmark.py            # Main orchestrator CLI
+├── requirements.txt
+├── .env.example                # Credential template (never commit .env)
+└── README.md
+```
+
+---
+
+## 8. Dependencies
+
+```
+neo4j          # Official Bolt driver (used for CognoDB, Neo4j, Memgraph)
+falkordb       # FalkorDB Python client (optional)
+kuzu           # Kùzu embedded engine (requires Python ≤3.12)
+matplotlib     # Chart generation
+tabulate       # Markdown table formatting
+python-dotenv  # .env loading
+tqdm           # Progress bars
+```
+
+---
+
+*This benchmark was conducted as part of the Wexa.ai Backend Engineer assessment. All results are real measurements from live database instances. No synthetic, simulated, or fallback numbers are presented as real data.*
