@@ -1,0 +1,672 @@
+{
+  "CognoDB Cloud": {
+    "platform": "CognoDB Cloud",
+    "footprint": {
+      "vCPU": "0.5 (burstable)",
+      "RAM_allocated": "256 MB",
+      "Disk_allocated": "1 GB",
+      "memory_usage": "Cloud Managed",
+      "stored_data_size": "Observable in CognoDB Cloud Console"
+    },
+    "ingest": {
+      "platform": "CognoDB Cloud",
+      "total_nodes": 37700,
+      "total_edges": 100000,
+      "wall_clock_time_s": 54.38,
+      "nodes_per_sec": 693.31,
+      "rels_per_sec": 1839.02
+    },
+    "traversals": {
+      "1_hop": {
+        "name": "1-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 256.93,
+        "p90_ms": 257.4,
+        "p95_ms": 257.53,
+        "p99_ms": 257.64,
+        "mean_ms": 256.98,
+        "min_ms": 256.41,
+        "max_ms": 257.67,
+        "std_dev_ms": 0.4,
+        "total_duration_s": 1.285,
+        "throughput_qps": 3.89
+      },
+      "2_hop": {
+        "name": "2-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 256.83,
+        "p90_ms": 257.62,
+        "p95_ms": 257.84,
+        "p99_ms": 258.02,
+        "mean_ms": 257.04,
+        "min_ms": 256.59,
+        "max_ms": 258.07,
+        "std_dev_ms": 0.52,
+        "total_duration_s": 1.285,
+        "throughput_qps": 3.89
+      },
+      "3_hop": {
+        "name": "3-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 257.09,
+        "p90_ms": 257.51,
+        "p95_ms": 257.64,
+        "p99_ms": 257.75,
+        "mean_ms": 257.03,
+        "min_ms": 256.51,
+        "max_ms": 257.77,
+        "std_dev_ms": 0.44,
+        "total_duration_s": 1.285,
+        "throughput_qps": 3.89
+      }
+    },
+    "lookups": {
+      "point_lookup": {
+        "name": "Point Lookup (by Primary ID)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 256.35,
+        "p90_ms": 256.4,
+        "p95_ms": 256.4,
+        "p99_ms": 256.41,
+        "mean_ms": 256.27,
+        "min_ms": 255.87,
+        "max_ms": 256.41,
+        "std_dev_ms": 0.2,
+        "total_duration_s": 1.281,
+        "throughput_qps": 3.9
+      },
+      "indexed_lookup": {
+        "name": "Indexed Filtered Lookup (stars >= threshold)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 607.61,
+        "p90_ms": 615.92,
+        "p95_ms": 616.6,
+        "p99_ms": 617.14,
+        "mean_ms": 589.84,
+        "min_ms": 512.47,
+        "max_ms": 617.28,
+        "std_dev_ms": 39.24,
+        "total_duration_s": 2.949,
+        "throughput_qps": 1.7
+      }
+    },
+    "aggregations": {
+      "aggregation_group_by": {
+        "name": "Group-by Aggregation (Language & Relations)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 1170.87,
+        "p90_ms": 1192.95,
+        "p95_ms": 1198.82,
+        "p99_ms": 1203.51,
+        "mean_ms": 1135.77,
+        "min_ms": 1047.42,
+        "max_ms": 1204.69,
+        "std_dev_ms": 60.67,
+        "total_duration_s": 5.679,
+        "throughput_qps": 0.88
+      }
+    },
+    "concurrency": {
+      "concurrency_1": {
+        "clients": 1,
+        "total_ops": 12,
+        "errors": 0,
+        "duration_s": 3.34,
+        "throughput_qps": 3.6,
+        "p50_ms": 262.91,
+        "p95_ms": 329.61
+      },
+      "concurrency_5": {
+        "clients": 5,
+        "total_ops": 32,
+        "errors": 0,
+        "duration_s": 3.2,
+        "throughput_qps": 9.99,
+        "p50_ms": 256.29,
+        "p95_ms": 1760.81
+      }
+    }
+  },
+  "Neo4j": {
+    "platform": "Neo4j",
+    "footprint": {
+      "vCPU": "0.5 (capped)",
+      "RAM_allocated": "512 MB",
+      "Disk_allocated": "1 GB",
+      "memory_usage": "JVM Heap capped at 384m",
+      "stored_data_size": "Observable via sysinfo"
+    },
+    "ingest": {
+      "platform": "Neo4j",
+      "total_nodes": 37700,
+      "total_edges": 394213,
+      "wall_clock_time_s": 58.74,
+      "nodes_per_sec": 641.81,
+      "rels_per_sec": 6711.15
+    },
+    "traversals": {
+      "1_hop": {
+        "name": "1-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 3.73,
+        "p90_ms": 5.81,
+        "p95_ms": 6.13,
+        "p99_ms": 6.39,
+        "mean_ms": 4.46,
+        "min_ms": 3.59,
+        "max_ms": 6.46,
+        "std_dev_ms": 1.09,
+        "total_duration_s": 0.022,
+        "throughput_qps": 224.01
+      },
+      "2_hop": {
+        "name": "2-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 15.12,
+        "p90_ms": 16.34,
+        "p95_ms": 16.51,
+        "p99_ms": 16.65,
+        "mean_ms": 14.08,
+        "min_ms": 10.25,
+        "max_ms": 16.68,
+        "std_dev_ms": 2.37,
+        "total_duration_s": 0.07,
+        "throughput_qps": 71.0
+      },
+      "3_hop": {
+        "name": "3-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 53.12,
+        "p90_ms": 58.35,
+        "p95_ms": 59.14,
+        "p99_ms": 59.77,
+        "mean_ms": 50.81,
+        "min_ms": 38.5,
+        "max_ms": 59.93,
+        "std_dev_ms": 7.55,
+        "total_duration_s": 0.254,
+        "throughput_qps": 19.68
+      }
+    },
+    "lookups": {
+      "point_lookup": {
+        "name": "Point Lookup (by Primary ID)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 4.23,
+        "p90_ms": 4.42,
+        "p95_ms": 4.43,
+        "p99_ms": 4.44,
+        "mean_ms": 3.89,
+        "min_ms": 3.16,
+        "max_ms": 4.45,
+        "std_dev_ms": 0.57,
+        "total_duration_s": 0.019,
+        "throughput_qps": 256.92
+      },
+      "indexed_lookup": {
+        "name": "Indexed Filtered Lookup (stars >= threshold)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 8.17,
+        "p90_ms": 10.85,
+        "p95_ms": 11.51,
+        "p99_ms": 12.03,
+        "mean_ms": 8.44,
+        "min_ms": 6.34,
+        "max_ms": 12.17,
+        "std_dev_ms": 2.08,
+        "total_duration_s": 0.042,
+        "throughput_qps": 118.31
+      }
+    },
+    "aggregations": {
+      "aggregation_group_by": {
+        "name": "Group-by Aggregation (Language & Relations)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 14.45,
+        "p90_ms": 17.76,
+        "p95_ms": 18.13,
+        "p99_ms": 18.43,
+        "mean_ms": 15.06,
+        "min_ms": 12.13,
+        "max_ms": 18.51,
+        "std_dev_ms": 2.26,
+        "total_duration_s": 0.075,
+        "throughput_qps": 66.4
+      }
+    },
+    "concurrency": {
+      "concurrency_1": {
+        "clients": 1,
+        "total_ops": 549,
+        "errors": 0,
+        "duration_s": 3.0,
+        "throughput_qps": 182.76,
+        "p50_ms": 5.39,
+        "p95_ms": 7.92
+      },
+      "concurrency_5": {
+        "clients": 5,
+        "total_ops": 2796,
+        "errors": 0,
+        "duration_s": 3.0,
+        "throughput_qps": 930.95,
+        "p50_ms": 5.24,
+        "p95_ms": 8.06
+      }
+    }
+  },
+  "Memgraph": {
+    "platform": "Memgraph",
+    "footprint": {
+      "vCPU": "0.5 (capped)",
+      "RAM_allocated": "256 MB",
+      "Disk_allocated": "In-Memory RAM Engine",
+      "memory_usage": "Observable via Memgraph SHOW STORAGE INFO",
+      "stored_data_size": "In-memory representation"
+    },
+    "ingest": {
+      "platform": "Memgraph",
+      "total_nodes": 37700,
+      "total_edges": 394213,
+      "wall_clock_time_s": 14.62,
+      "nodes_per_sec": 2578.66,
+      "rels_per_sec": 26963.95
+    },
+    "traversals": {
+      "1_hop": {
+        "name": "1-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 1.27,
+        "p90_ms": 1.53,
+        "p95_ms": 1.54,
+        "p99_ms": 1.56,
+        "mean_ms": 1.32,
+        "min_ms": 1.11,
+        "max_ms": 1.56,
+        "std_dev_ms": 0.17,
+        "total_duration_s": 0.007,
+        "throughput_qps": 758.23
+      },
+      "2_hop": {
+        "name": "2-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 3.55,
+        "p90_ms": 4.19,
+        "p95_ms": 4.21,
+        "p99_ms": 4.22,
+        "mean_ms": 3.62,
+        "min_ms": 3.01,
+        "max_ms": 4.22,
+        "std_dev_ms": 0.49,
+        "total_duration_s": 0.018,
+        "throughput_qps": 276.48
+      },
+      "3_hop": {
+        "name": "3-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 13.27,
+        "p90_ms": 17.54,
+        "p95_ms": 18.23,
+        "p99_ms": 18.78,
+        "mean_ms": 14.52,
+        "min_ms": 11.95,
+        "max_ms": 18.92,
+        "std_dev_ms": 2.48,
+        "total_duration_s": 0.073,
+        "throughput_qps": 68.86
+      }
+    },
+    "lookups": {
+      "point_lookup": {
+        "name": "Point Lookup (by Primary ID)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 1.38,
+        "p90_ms": 1.61,
+        "p95_ms": 1.67,
+        "p99_ms": 1.72,
+        "mean_ms": 1.34,
+        "min_ms": 1.04,
+        "max_ms": 1.74,
+        "std_dev_ms": 0.24,
+        "total_duration_s": 0.007,
+        "throughput_qps": 744.74
+      },
+      "indexed_lookup": {
+        "name": "Indexed Filtered Lookup (stars >= threshold)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 4.06,
+        "p90_ms": 4.7,
+        "p95_ms": 4.91,
+        "p99_ms": 5.07,
+        "mean_ms": 4.0,
+        "min_ms": 3.2,
+        "max_ms": 5.11,
+        "std_dev_ms": 0.65,
+        "total_duration_s": 0.02,
+        "throughput_qps": 250.14
+      }
+    },
+    "aggregations": {
+      "aggregation_group_by": {
+        "name": "Group-by Aggregation (Language & Relations)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 4.55,
+        "p90_ms": 6.11,
+        "p95_ms": 6.18,
+        "p99_ms": 6.24,
+        "mean_ms": 4.84,
+        "min_ms": 3.62,
+        "max_ms": 6.25,
+        "std_dev_ms": 1.06,
+        "total_duration_s": 0.024,
+        "throughput_qps": 206.76
+      }
+    },
+    "concurrency": {
+      "concurrency_1": {
+        "clients": 1,
+        "total_ops": 1778,
+        "errors": 0,
+        "duration_s": 3.0,
+        "throughput_qps": 592.37,
+        "p50_ms": 1.68,
+        "p95_ms": 2.26
+      },
+      "concurrency_5": {
+        "clients": 5,
+        "total_ops": 9108,
+        "errors": 0,
+        "duration_s": 3.0,
+        "throughput_qps": 3034.11,
+        "p50_ms": 1.65,
+        "p95_ms": 2.23
+      }
+    }
+  },
+  "FalkorDB": {
+    "platform": "FalkorDB",
+    "footprint": {
+      "vCPU": "0.5 (capped)",
+      "RAM_allocated": "256 MB",
+      "Disk_allocated": "In-Memory Redis GraphBLAS",
+      "memory_usage": "Observable via Redis INFO memory",
+      "stored_data_size": "Sparse CSR/CSC Matrix representation"
+    },
+    "ingest": {
+      "platform": "FalkorDB",
+      "total_nodes": 37700,
+      "total_edges": 394213,
+      "wall_clock_time_s": 19.35,
+      "nodes_per_sec": 1948.32,
+      "rels_per_sec": 20372.76
+    },
+    "traversals": {
+      "1_hop": {
+        "name": "1-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 1.81,
+        "p90_ms": 2.4,
+        "p95_ms": 2.46,
+        "p99_ms": 2.51,
+        "mean_ms": 1.89,
+        "min_ms": 1.26,
+        "max_ms": 2.53,
+        "std_dev_ms": 0.44,
+        "total_duration_s": 0.009,
+        "throughput_qps": 527.52
+      },
+      "2_hop": {
+        "name": "2-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 6.97,
+        "p90_ms": 7.8,
+        "p95_ms": 8.01,
+        "p99_ms": 8.17,
+        "mean_ms": 6.47,
+        "min_ms": 4.24,
+        "max_ms": 8.21,
+        "std_dev_ms": 1.36,
+        "total_duration_s": 0.032,
+        "throughput_qps": 154.43
+      },
+      "3_hop": {
+        "name": "3-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 26.33,
+        "p90_ms": 29.43,
+        "p95_ms": 29.81,
+        "p99_ms": 30.12,
+        "mean_ms": 25.88,
+        "min_ms": 20.11,
+        "max_ms": 30.2,
+        "std_dev_ms": 3.46,
+        "total_duration_s": 0.129,
+        "throughput_qps": 38.64
+      }
+    },
+    "lookups": {
+      "point_lookup": {
+        "name": "Point Lookup (by Primary ID)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 1.34,
+        "p90_ms": 1.97,
+        "p95_ms": 2.0,
+        "p99_ms": 2.02,
+        "mean_ms": 1.5,
+        "min_ms": 0.98,
+        "max_ms": 2.02,
+        "std_dev_ms": 0.39,
+        "total_duration_s": 0.008,
+        "throughput_qps": 664.73
+      },
+      "indexed_lookup": {
+        "name": "Indexed Filtered Lookup (stars >= threshold)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 5.6,
+        "p90_ms": 7.27,
+        "p95_ms": 7.78,
+        "p99_ms": 8.19,
+        "mean_ms": 5.88,
+        "min_ms": 4.58,
+        "max_ms": 8.3,
+        "std_dev_ms": 1.27,
+        "total_duration_s": 0.029,
+        "throughput_qps": 170.06
+      }
+    },
+    "aggregations": {
+      "aggregation_group_by": {
+        "name": "Group-by Aggregation (Language & Relations)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 6.62,
+        "p90_ms": 8.32,
+        "p95_ms": 8.51,
+        "p99_ms": 8.65,
+        "mean_ms": 6.96,
+        "min_ms": 5.15,
+        "max_ms": 8.69,
+        "std_dev_ms": 1.2,
+        "total_duration_s": 0.035,
+        "throughput_qps": 143.65
+      }
+    },
+    "concurrency": {
+      "concurrency_1": {
+        "clients": 1,
+        "total_ops": 1569,
+        "errors": 0,
+        "duration_s": 3.0,
+        "throughput_qps": 522.8,
+        "p50_ms": 1.88,
+        "p95_ms": 2.62
+      },
+      "concurrency_5": {
+        "clients": 5,
+        "total_ops": 7910,
+        "errors": 0,
+        "duration_s": 3.0,
+        "throughput_qps": 2634.66,
+        "p50_ms": 1.89,
+        "p95_ms": 2.59
+      }
+    }
+  },
+  "K\u00f9zu": {
+    "platform": "K\u00f9zu",
+    "footprint": {
+      "vCPU": "0.5 (1 worker thread)",
+      "RAM_allocated": "256 MB (Buffer Pool)",
+      "Disk_allocated": "Columnar Disk/Memory layout",
+      "memory_usage": "Bounded by 256 MB buffer pool limit",
+      "stored_data_size": "Vectorized CSR files"
+    },
+    "ingest": {
+      "platform": "K\u00f9zu",
+      "total_nodes": 37700,
+      "total_edges": 394213,
+      "wall_clock_time_s": 0.47,
+      "nodes_per_sec": 80896.79,
+      "rels_per_sec": 845903.6
+    },
+    "traversals": {
+      "1_hop": {
+        "name": "1-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 0.0,
+        "p90_ms": 0.0,
+        "p95_ms": 0.0,
+        "p99_ms": 0.0,
+        "mean_ms": 0.0,
+        "min_ms": 0.0,
+        "max_ms": 0.0,
+        "std_dev_ms": 0.0,
+        "total_duration_s": 0.0,
+        "throughput_qps": 1935759.91
+      },
+      "2_hop": {
+        "name": "2-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 0.02,
+        "p90_ms": 0.02,
+        "p95_ms": 0.02,
+        "p99_ms": 0.03,
+        "mean_ms": 0.02,
+        "min_ms": 0.01,
+        "max_ms": 0.03,
+        "std_dev_ms": 0.01,
+        "total_duration_s": 0.0,
+        "throughput_qps": 61068.69
+      },
+      "3_hop": {
+        "name": "3-hop Traversal",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 0.1,
+        "p90_ms": 0.13,
+        "p95_ms": 0.14,
+        "p99_ms": 0.15,
+        "mean_ms": 0.1,
+        "min_ms": 0.07,
+        "max_ms": 0.15,
+        "std_dev_ms": 0.03,
+        "total_duration_s": 0.0,
+        "throughput_qps": 10341.26
+      }
+    },
+    "lookups": {
+      "point_lookup": {
+        "name": "Point Lookup (by Primary ID)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 0.0,
+        "p90_ms": 0.0,
+        "p95_ms": 0.0,
+        "p99_ms": 0.0,
+        "mean_ms": 0.0,
+        "min_ms": 0.0,
+        "max_ms": 0.0,
+        "std_dev_ms": 0.0,
+        "total_duration_s": 0.0,
+        "throughput_qps": 1090993.15
+      },
+      "indexed_lookup": {
+        "name": "Indexed Filtered Lookup (stars >= threshold)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 0.39,
+        "p90_ms": 1.13,
+        "p95_ms": 1.34,
+        "p99_ms": 1.51,
+        "mean_ms": 0.64,
+        "min_ms": 0.37,
+        "max_ms": 1.55,
+        "std_dev_ms": 0.46,
+        "total_duration_s": 0.003,
+        "throughput_qps": 1563.84
+      }
+    },
+    "aggregations": {
+      "aggregation_group_by": {
+        "name": "Group-by Aggregation (Language & Relations)",
+        "count": 5,
+        "errors": 0,
+        "p50_ms": 3.62,
+        "p90_ms": 5.13,
+        "p95_ms": 5.62,
+        "p99_ms": 6.02,
+        "mean_ms": 4.09,
+        "min_ms": 3.47,
+        "max_ms": 6.12,
+        "std_dev_ms": 1.01,
+        "total_duration_s": 0.02,
+        "throughput_qps": 244.38
+      }
+    },
+    "concurrency": {
+      "concurrency_1": {
+        "clients": 1,
+        "total_ops": 9463527,
+        "errors": 0,
+        "duration_s": 3.04,
+        "throughput_qps": 3114158.8,
+        "p50_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "concurrency_5": {
+        "clients": 5,
+        "total_ops": 9500617,
+        "errors": 0,
+        "duration_s": 3.07,
+        "throughput_qps": 3093082.76,
+        "p50_ms": 0.0,
+        "p95_ms": 0.0
+      }
+    }
+  }
+}
