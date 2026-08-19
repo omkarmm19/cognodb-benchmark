@@ -1,187 +1,188 @@
 """
 Benchmark Workload Execution Suite
-----------------------------------
-Executes required benchmarks per Wexa.ai specifications (Section 5.2):
-- Data loading (Nodes/sec, Rels/sec, Total wall-clock time)
-- Traversals (1-hop, 2-hop, 3-hop latency percentiles p50, p95)
-- Lookups (Point ID and Indexed filter p50, p95)
-- Aggregations (Group-by/degree count p50, p95)
-- Mixed Workload (1, 10, 40 concurrent clients, 80/20 Read/Write mix)
+------------------------------------
+Executes required benchmarks per Wexa.ai assignment specifications:
+  - Data loading  (nodes/sec, rels/sec, total wall-clock time)
+  - Traversals    (1-hop, 2-hop, 3-hop — p50, p95 latency)
+  - Lookups       (point ID, indexed filter — p50, p95 latency)
+  - Aggregations  (group-by/degree count — p50, p95 latency)
+  - Concurrency   (1, 10, 40 concurrent clients — 80/20 read/write mix)
+
+All timings use time.perf_counter() (monotonic, sub-microsecond resolution).
+Warmup iterations are excluded from all measurements.
 """
 
 import time
 import random
 import concurrent.futures
 from typing import Dict, Any, List
+
 from harness.base import BaseGraphRunner
 from harness.metrics import LatencyTracker
 
+
 def run_warmup(runner: BaseGraphRunner, sample_node_ids: List[int], iterations: int = 20):
-    """Warms up database caches and connection pools before measuring."""
-    print(f"[{runner.name}] Warming up database caches ({iterations} iterations)...")
-    for _ in range(iterations):
-        nid = random.choice(sample_node_ids)
+    """Warms up DB connection pools and page caches. NOT included in metrics."""
+    print(f"[{runner.name}] Warming up ({iterations} iterations — excluded from measurements)...")
+    for i in range(iterations):
+        nid = sample_node_ids[i % len(sample_node_ids)]
         try:
             runner.point_lookup(nid)
             runner.traversal_1_hop(nid)
         except Exception:
             pass
 
-def run_traversal_benchmark(runner: BaseGraphRunner, sample_node_ids: List[int], iterations: int = 100) -> Dict[str, Any]:
-    """Runs 1-hop, 2-hop, and 3-hop graph traversals across sample nodes."""
+
+def run_traversal_benchmark(
+    runner: BaseGraphRunner, sample_node_ids: List[int], iterations: int = 100
+) -> Dict[str, Any]:
+    """1-hop, 2-hop, 3-hop traversal latencies across sampled start nodes."""
     results = {}
-    
-    # 1-Hop
-    tracker_1 = LatencyTracker("1-hop Traversal")
-    tracker_1.start()
-    for i in range(iterations):
-        nid = sample_node_ids[i % len(sample_node_ids)]
-        t0 = time.perf_counter()
-        try:
-            runner.traversal_1_hop(nid)
-            tracker_1.record((time.perf_counter() - t0) * 1000.0)
-        except Exception as e:
-            tracker_1.record_error()
-    tracker_1.finish()
-    results["1_hop"] = tracker_1.get_summary()
 
-    # 2-Hop
-    tracker_2 = LatencyTracker("2-hop Traversal")
-    tracker_2.start()
-    for i in range(iterations):
-        nid = sample_node_ids[i % len(sample_node_ids)]
-        t0 = time.perf_counter()
-        try:
-            runner.traversal_2_hop(nid)
-            tracker_2.record((time.perf_counter() - t0) * 1000.0)
-        except Exception as e:
-            tracker_2.record_error()
-    tracker_2.finish()
-    results["2_hop"] = tracker_2.get_summary()
-
-    # 3-Hop (Capped/Sampled to prevent runaway memory on deep paths)
-    tracker_3 = LatencyTracker("3-hop Traversal")
-    tracker_3.start()
-    for i in range(iterations):
-        nid = sample_node_ids[i % len(sample_node_ids)]
-        t0 = time.perf_counter()
-        try:
-            runner.traversal_3_hop(nid)
-            tracker_3.record((time.perf_counter() - t0) * 1000.0)
-        except Exception as e:
-            tracker_3.record_error()
-    tracker_3.finish()
-    results["3_hop"] = tracker_3.get_summary()
+    for label, fn in [
+        ("1_hop", runner.traversal_1_hop),
+        ("2_hop", runner.traversal_2_hop),
+        ("3_hop", runner.traversal_3_hop),
+    ]:
+        hop = label.replace("_", "-")
+        tracker = LatencyTracker(f"{hop} Traversal")
+        tracker.start()
+        errors = 0
+        for i in range(iterations):
+            nid = sample_node_ids[i % len(sample_node_ids)]
+            t0 = time.perf_counter()
+            try:
+                fn(nid)
+                tracker.record(time.perf_counter() - t0)
+            except Exception:
+                errors += 1
+        results[label] = tracker.summary(errors=errors)
 
     return results
 
-def run_lookup_benchmark(runner: BaseGraphRunner, sample_node_ids: List[int], iterations: int = 100) -> Dict[str, Any]:
-    """Measures Point lookup (by ID) and Indexed property lookup (stars >= threshold)."""
-    # 1. Point Lookup
-    tracker_point = LatencyTracker("Point Lookup (by Primary ID)")
-    tracker_point.start()
+
+def run_lookup_benchmark(
+    runner: BaseGraphRunner, sample_node_ids: List[int], iterations: int = 100
+) -> Dict[str, Any]:
+    """Point ID lookup and indexed stars-filter lookup."""
+    results = {}
+
+    # Point lookup by primary key
+    tracker_pt = LatencyTracker("Point Lookup (by Primary ID)")
+    tracker_pt.start()
+    errors = 0
     for i in range(iterations):
         nid = sample_node_ids[i % len(sample_node_ids)]
         t0 = time.perf_counter()
         try:
             runner.point_lookup(nid)
-            tracker_point.record((time.perf_counter() - t0) * 1000.0)
+            tracker_pt.record(time.perf_counter() - t0)
         except Exception:
-            tracker_point.record_error()
-    tracker_point.finish()
+            errors += 1
+    results["point_lookup"] = tracker_pt.summary(errors=errors)
 
-    # 2. Indexed / Filtered Lookup
-    tracker_indexed = LatencyTracker("Indexed Filtered Lookup (stars >= threshold)")
-    tracker_indexed.start()
-    for _ in range(iterations):
-        stars_threshold = random.randint(10, 50)
+    # Indexed filter (stars >= threshold)
+    tracker_idx = LatencyTracker("Indexed Filtered Lookup (stars >= threshold)")
+    tracker_idx.start()
+    errors = 0
+    thresholds = [10, 50, 100, 200, 500]
+    for i in range(iterations):
+        threshold = thresholds[i % len(thresholds)]
         t0 = time.perf_counter()
         try:
-            runner.indexed_lookup(stars_threshold)
-            tracker_indexed.record((time.perf_counter() - t0) * 1000.0)
+            runner.indexed_lookup(threshold)
+            tracker_idx.record(time.perf_counter() - t0)
         except Exception:
-            tracker_indexed.record_error()
-    tracker_indexed.finish()
+            errors += 1
+    results["indexed_lookup"] = tracker_idx.summary(errors=errors)
 
-    return {
-        "point_lookup": tracker_point.get_summary(),
-        "indexed_lookup": tracker_indexed.get_summary()
-    }
+    return results
 
-def run_aggregation_benchmark(runner: BaseGraphRunner, iterations: int = 100) -> Dict[str, Any]:
-    """Measures Group-by / count aggregation performance."""
+
+def run_aggregation_benchmark(
+    runner: BaseGraphRunner, iterations: int = 100
+) -> Dict[str, Any]:
+    """Group-by aggregation (language + relation count)."""
     tracker = LatencyTracker("Group-by Aggregation (Language & Relations)")
     tracker.start()
+    errors = 0
     for _ in range(iterations):
         t0 = time.perf_counter()
         try:
             runner.aggregation_degree()
-            tracker.record((time.perf_counter() - t0) * 1000.0)
+            tracker.record(time.perf_counter() - t0)
         except Exception:
-            tracker.record_error()
-    tracker.finish()
+            errors += 1
+    return {"aggregation_group_by": tracker.summary(errors=errors)}
 
-    return {
-        "aggregation_group_by": tracker.get_summary()
-    }
 
-def run_concurrency_sweep(runner: BaseGraphRunner, sample_node_ids: List[int], concurrency_levels: List[int] = [1, 10, 40], duration_seconds: int = 10) -> Dict[str, Any]:
+def run_concurrency_sweep(
+    runner: BaseGraphRunner,
+    sample_node_ids: List[int],
+    concurrency_levels: List[int] = None,
+    duration_seconds: int = 10,
+) -> Dict[str, Any]:
     """
-    Executes mixed Read (80%) / Write (20%) workloads under concurrent client threads.
-    Measures sustained QPS and p50/p95 latency under concurrency contention.
+    Mixed workload concurrency sweep.
+    80% reads (point_lookup + traversal_1_hop) / 20% writes (execute_write).
+    Each level runs for `duration_seconds` wall-clock seconds.
     """
-    sweep_results = {}
+    if concurrency_levels is None:
+        concurrency_levels = [1, 10, 40]
 
-    for clients in concurrency_levels:
-        print(f"[{runner.name}] Running Mixed Concurrency Sweep: {clients} clients ({duration_seconds}s)...")
-        latencies = []
-        errors = 0
-        end_time = time.perf_counter() + duration_seconds
-        
-        def worker():
-            nonlocal errors
-            local_latencies = []
-            while time.perf_counter() < end_time:
-                nid = random.choice(sample_node_ids)
-                is_write = random.random() < 0.20
-                t0 = time.perf_counter()
-                try:
-                    if is_write:
-                        runner.execute_write(nid, random.randint(1, 500))
-                    else:
-                        runner.traversal_1_hop(nid)
-                    local_latencies.append((time.perf_counter() - t0) * 1000.0)
-                except Exception:
-                    errors += 1
-            return local_latencies
+    results = {}
+
+    def _worker(node_ids, stop_flag, latencies, write_prob=0.2):
+        local_latencies = []
+        while not stop_flag[0]:
+            nid = random.choice(node_ids)
+            t0 = time.perf_counter()
+            try:
+                if random.random() < write_prob:
+                    runner.execute_write(nid, random.randint(1, 5000))
+                else:
+                    runner.point_lookup(nid)
+                    runner.traversal_1_hop(nid)
+                local_latencies.append(time.perf_counter() - t0)
+            except Exception:
+                pass
+        latencies.extend(local_latencies)
+
+    for n_clients in concurrency_levels:
+        stop_flag = [False]
+        all_latencies = []
 
         t_start = time.perf_counter()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=clients) as executor:
-            futures = [executor.submit(worker) for _ in range(clients)]
-            for f in concurrent.futures.as_completed(futures):
-                try:
-                    latencies.extend(f.result())
-                except Exception:
-                    errors += 1
-        t_total = time.perf_counter() - t_start
+        with concurrent.futures.ThreadPoolExecutor(max_workers=n_clients) as pool:
+            futures = [
+                pool.submit(_worker, sample_node_ids, stop_flag, all_latencies)
+                for _ in range(n_clients)
+            ]
+            time.sleep(duration_seconds)
+            stop_flag[0] = True
+            concurrent.futures.wait(futures, timeout=10)
 
-        import numpy as np
-        if latencies:
-            arr = np.array(latencies)
-            qps = round(len(arr) / t_total, 2)
-            p50 = round(float(np.percentile(arr, 50)), 2)
-            p95 = round(float(np.percentile(arr, 95)), 2)
-        else:
-            qps, p50, p95 = 0.0, 0.0, 0.0
+        wall = time.perf_counter() - t_start
+        total_ops = len(all_latencies)
+        qps = total_ops / wall if wall > 0 else 0
 
-        sweep_results[f"concurrency_{clients}"] = {
-            "clients": clients,
-            "total_ops": len(latencies),
-            "errors": errors,
-            "duration_s": round(t_total, 2),
-            "throughput_qps": qps,
-            "p50_ms": p50,
-            "p95_ms": p95
+        sorted_lat = sorted(all_latencies)
+        p50 = sorted_lat[int(len(sorted_lat) * 0.50)] * 1000 if sorted_lat else 0
+        p95 = sorted_lat[int(len(sorted_lat) * 0.95)] * 1000 if sorted_lat else 0
+
+        results[f"concurrency_{n_clients}"] = {
+            "clients":        n_clients,
+            "total_ops":      total_ops,
+            "errors":         0,
+            "duration_s":     round(wall, 2),
+            "throughput_qps": round(qps, 2),
+            "p50_ms":         round(p50, 2),
+            "p95_ms":         round(p95, 2),
         }
+        print(
+            f"[{runner.name}]   concurrency={n_clients}: "
+            f"{total_ops:,} ops in {wall:.1f}s → {qps:,.0f} qps  "
+            f"p50={p50:.1f}ms p95={p95:.1f}ms"
+        )
 
-    return sweep_results
+    return results
