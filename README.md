@@ -25,7 +25,7 @@ This benchmark was engineered to evaluate query performance, ingestion throughpu
 | **FalkorDB** | Self-Hosted Container (Docker) | Redis Protocol (`localhost:6379`) | Localhost Loopback (<0.5ms RTT) |
 | **Kùzu** | Embedded In-Process | Direct C++ API / Python bindings | Zero Network Overhead (In-Memory / Direct Disk) |
 
-> **Important Analytical Note**: Latency differences between cloud-hosted databases (CognoDB, Neo4j AuraDB) and local/embedded engines (Memgraph, FalkorDB, Kùzu) are dominated by network transport (TLS handshake, TCP packet transit, WAN routing). Within cloud targets, Neo4j AuraDB benefited from lower client-to-cloud network RTT and a larger documented RAM allocation (~1 GB vs CognoDB's 512 MB).
+> **Important Analytical Note**: Latency differences between cloud-hosted databases (CognoDB, Neo4j AuraDB) and local/embedded engines (Memgraph, FalkorDB, Kùzu) are primarily attributable to network transport (TLS handshake, TCP packet transit, WAN routing). Within cloud targets, Neo4j AuraDB measured a lower latency floor than CognoDB; this likely reflects a combination of client-to-cloud network RTT and server-side execution differences. **Resource parity across the five databases was not achievable**: CognoDB c0 is 512 MB RAM with burst 0.5 vCPU; Neo4j AuraDB Free has no publicly documented RAM specification (it is a multi-tenant managed service); local Docker peers were capped to 512 MB / 0.5 vCPU via cgroup hard limits; and Kùzu's 512 MB buffer pool parameter bounds its page cache but is **not** a hard cap on total process RSS. These differences must be considered when interpreting inter-engine results.
 
 ---
 
@@ -45,17 +45,21 @@ This benchmark was engineered to evaluate query performance, ingestion throughpu
 
 ## 2. Hardware Specs & Resource Configuration
 
-To ensure maximum fairness across different engine architectures, resource allocations were standardized to a 512 MB RAM / 0.5–1 vCPU baseline where platform controls allowed:
+Resource allocations were standardized to a 512 MB RAM / 0.5–1 vCPU baseline **where platform controls allowed**. Strict parity was not possible across all five engines due to managed-service constraints; the table below documents the actual observed or configured allocation for each platform:
 
 | Platform | Deployment Model | vCPU Allocation | Memory / Buffer Pool Limit | Storage Architecture | Region / Host |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **CognoDB Cloud** | Managed Cloud Free (c0) | Burst to 0.5 vCPU | **512 MB RAM** *(Observed in console)* | Managed Cloud Disk (1 GiB) | `us-east4` (GCP) |
-| **Neo4j AuraDB** | Managed Cloud Free | Shared (Unpublished) | ~1 GB RAM *(Aura Free tier spec)* | Managed Cloud Graph Storage | Cloud Managed |
-| **Memgraph** | Docker (`memgraph/memgraph:latest`) | **0.5 vCPU** (`cpus: '0.50'`) | **512 MB RAM** (`memory: 512M`) | In-memory C++ graph with write-ahead log | Local container |
-| **FalkorDB** | Docker (`falkordb/falkordb:latest`) | **0.5 vCPU** (`cpus: '0.50'`) | **512 MB RAM** (`memory: 512M`) | GraphBLAS CSR sparse adjacency matrix | Local container |
-| **Kùzu** | Embedded In-Process Engine | **1 Thread** (`num_threads=1`) | **512 MB Buffer Pool** (`512MB`) | Vectorized columnar disk layout | Local in-process |
+| **CognoDB Cloud** | Managed Cloud Free (c0) | Burst to 0.5 vCPU | **512 MB RAM** *(Observed in management console)* | Managed Cloud Disk (1 GiB) | `us-east4` (GCP) |
+| **Neo4j AuraDB** | Managed Cloud Free (multi-tenant) | Undisclosed | **Undisclosed** *(no published RAM spec for Free tier — managed multi-tenant service)* | Managed Cloud Graph Storage | Cloud Managed |
+| **Memgraph** | Docker (`memgraph/memgraph:latest`) | **0.5 vCPU** (`cpus: '0.50'`) | **512 MB container hard limit** (`memory: 512M`) | In-memory C++ graph with write-ahead log | Local container |
+| **FalkorDB** | Docker (`falkordb/falkordb:latest`) | **0.5 vCPU** (`cpus: '0.50'`) | **512 MB container hard limit** (`memory: 512M`) | GraphBLAS CSR sparse adjacency matrix | Local container |
+| **Kùzu** | Embedded In-Process Engine | **1 Thread** (`num_threads=1`) | **512 MB buffer pool parameter** *(see caveat note below)* | Vectorized columnar disk layout | Local in-process |
 
-*Note on CognoDB RAM: The assignment prompt mentions 256 MB for the free tier, but the active CognoDB Cloud management console specifies 512 MB RAM for c0 instances. We report the true observed configuration.*
+> **⚠ Resource Parity Caveats:**
+> - **CognoDB c0 RAM**: The assignment specification mentions 256 MB for the free tier, but the active CognoDB Cloud management console showed 512 MB RAM. We report the true observed configuration.
+> - **Neo4j AuraDB Free RAM**: Neo4j does not publish a RAM specification for the AuraDB Free tier; it is a shared, multi-tenant managed environment. A previously stated estimate of "~1 GB" has been removed as it was unverifiable. Performance results for Neo4j AuraDB may reflect server-side resource sharing conditions outside our control.
+> - **Kùzu `buffer_pool_size`**: The `buffer_pool_size=512MB` parameter bounds Kùzu's internal page cache, but it does **not** hard-cap the total process RSS. The actual process memory during benchmark runs may have exceeded 512 MB due to query execution overhead, Python runtime allocations, and bulk-load working memory. This is an inherent limitation of the embedded engine model vs. Docker cgroup enforcement.
+> - **Docker memory limits**: The `memory: 512M` setting in `docker-compose.yml` is a hard cgroup limit enforced by the container runtime, providing genuine hard-cap enforcement for Memgraph and FalkorDB.
 
 ---
 
@@ -171,17 +175,17 @@ All charts are auto-generated directly from `results/raw_metrics.json`:
 ### 6.1 Data Ingestion Dynamics
 - **Kùzu's Vectorized Copy**: Ingested all 394k relationships in **0.31 seconds** (>1.2M rels/s) via native columnar binary page writing and zero network IPC.
 - **Memgraph & FalkorDB**: Completed full ingestion in 5.1s and 14.4s respectively using batch Bolt/Redis protocols over localhost loopback.
-- **CognoDB Cloud & Neo4j AuraDB**: Cloud databases require batched network transmissions over TLS. CognoDB required 428.9s (919 rels/s) due to smaller connection buffers and WAN round-trip overhead on batch transactions, while Neo4j AuraDB completed in 100.9s (3,908 rels/s).
+- **CognoDB Cloud & Neo4j AuraDB**: Cloud databases require batched network transmissions over TLS/WAN, which introduces round-trip latency per batch. CognoDB required 428.9s (919 rels/s); Neo4j AuraDB completed in 100.9s (3,908 rels/s). The performance gap likely reflects a combination of WAN RTT, batch protocol efficiency, and server-side resource provisioning differences — the exact root cause was not isolated.
 
 ### 6.2 Traversal & Lookup Latencies
-- **In-Memory & Embedded Advantage**: FalkorDB (sparse matrix multiplication via GraphBLAS), Memgraph (in-memory C++ pointer chasing), and Kùzu (vectorized columnar scan) delivered sub-millisecond latencies across 1-hop, 2-hop, and 3-hop traversals (0.2ms – 0.7ms).
-- **Cloud Latency Baseline**: Both CognoDB Cloud (240–300ms) and Neo4j AuraDB (76–99ms) latencies reflect the unavoidable base TLS/WAN network round-trip time between client and cloud server.
-- **Aggregation**: Kùzu outperformed all engines on group-by degree aggregations (**5.8ms** p50) due to vectorized columnar aggregation, whereas CognoDB Cloud required ~4.9s for full-graph scans over the free tier.
+- **Local & Embedded Engines**: FalkorDB, Memgraph, and Kùzu all delivered sub-millisecond latencies across 1-hop, 2-hop, and 3-hop traversals (observed range: 0.1ms – 0.7ms). These engines execute on localhost loopback or in-process, eliminating WAN round-trip overhead entirely.
+- **Cloud Latency Baseline**: CognoDB Cloud measured 240–300ms p50 point-lookup latency; Neo4j AuraDB measured 76–99ms p50. Both baselines are consistent with WAN network round-trip time between the benchmark client and the respective cloud servers. The precise contribution of network RTT vs. server-side execution time was not separately profiled.
+- **Aggregation**: Kùzu outperformed all other engines on group-by degree aggregations (**5.8ms** p50 vs. 160–4,957ms for the other engines), consistent with its columnar storage layout. CognoDB Cloud required ~4.9s; the exact cause (network serialization of a large result set, server-side scan cost, or free-tier resource constraints) was not isolated.
 
 ### 6.3 Concurrency & Scaling
-- **FalkorDB**: Achieved the highest concurrent throughput, peaking at **4,731.8 QPS** at 10 clients due to non-blocking Redis event loop architecture and fast C matrix operations.
-- **Memgraph**: Scaled linearly up to **1,602.6 QPS** at 40 concurrent workers with low tail latencies (p95: 69ms).
-- **CognoDB Cloud**: At 40 concurrent clients, CognoDB reached 14.0 QPS with connection pool contention on the free tier c0 resource ceiling.
+- **FalkorDB**: Achieved the highest measured concurrent throughput, peaking at **4,731.8 QPS** at 10 clients. FalkorDB's Redis-based protocol and single-threaded event loop may contribute to its concurrency efficiency, though the exact mechanism was not profiled.
+- **Memgraph**: Reached **1,602.6 QPS** at 40 concurrent workers with stable p95 tail latency (69ms), suggesting good multi-client handling under the 0.5 vCPU Docker constraint.
+- **CognoDB Cloud**: Reached 14.0 QPS at 40 concurrent clients with elevated p95 latency (5,492ms). The throughput ceiling is consistent with WAN latency dominance on the cloud-hosted free tier instance.
 
 ---
 
